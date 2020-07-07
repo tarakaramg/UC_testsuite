@@ -22,10 +22,10 @@ test_parser.cmo : test_parser.cmi
 	ocamlc -g -c test_parser.ml
 
 test_parser.ml : test_parser.mly
-	menhir $<
+	menhir --fixed-exception $<
 
 test_parser.mli : test_parser.mly
-	menhir $<
+	menhir --fixed-exception $<
 
 clean:
 	rm -f *.cmo *.cmi test_lexer.ml test_parser.ml test_parser.mli $(MAIN)
