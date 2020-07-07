@@ -1,5 +1,6 @@
 {
 open Test_parser
+open Test_types
 open Str
 
 let keyword_table = Hashtbl.create 53
@@ -31,7 +32,7 @@ rule token =
 let parse (s : string) : expr list =
   let lexbuf = Lexing.from_string (Str.global_replace (Str.regexp "[\t]") "" s) in
   let ctr = 
-  try  Test_parser.prog Test_lexer.token lexbuf
+  try  Test_parser.prog token lexbuf
   with Parsing.Parse_error ->
 	  let p = Lexing.lexeme_start_p lexbuf in
 	    Printf.eprintf "Parse error at line %d character %d near %s \n"

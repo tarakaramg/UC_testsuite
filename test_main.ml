@@ -1,6 +1,5 @@
 open Test_types 
 open Str
-  
 let parse (s : string) : expr list =
   let lexbuf = Lexing.from_string (Str.global_replace (Str.regexp "[\t]") "" s) in
   let ctr = 
