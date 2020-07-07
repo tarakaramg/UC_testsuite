@@ -1,6 +1,0 @@
-open Test_types 
-
-let parse (s : string) : expr =
-  let lexbuf = Lexing.from_string s in
-  let test_types = test_parser.prog test_lexer.read lexbuf in
-  test_types

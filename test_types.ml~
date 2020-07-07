@@ -1,3 +1,0 @@
-type expr = 
-| Var of string
-| Desc of string
