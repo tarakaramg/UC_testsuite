@@ -1,6 +1,6 @@
 MAIN=dsl_test
 
-OBJS = test_types.cmo  test_lexer.cmo test_parser.cmo  test_main.cmo
+OBJS =   test_types.cmo test_parser.cmo test_lexer.cmo     test_main.cmo 
 
 %.cmo : %.ml
 	ocamlc -g -c $<
@@ -17,6 +17,9 @@ test_lexer.ml : test_lexer.mll
 
 test_lexer.cmo : test_parser.cmi test_lexer.ml
 	ocamlc -g -c test_lexer.ml
+
+test_parser.cmo : test_parser.cmi 
+	ocamlc -g -c test_parser.ml
 
 test_parser.ml : test_parser.mly
 	menhir $<

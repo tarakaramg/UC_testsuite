@@ -3,4 +3,3 @@ type expr =
 | Desc of string
 | Rootf of string * string
 | Options of string
-| White
