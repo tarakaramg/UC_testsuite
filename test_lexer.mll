@@ -14,7 +14,7 @@ let create =
 let keyword k = try Hashtbl.find keyword_table k with Not_found -> ID(k)
 }
 
-let id = [^ '.' ':' '\t' '\n']+
+let id = [^ '.' ':' '\n']+
 let alphanum = ['0'-'9' '_' '?' 'a'-'z' 'A'-'Z']
 let alpha = ['_' 'a'-'z' 'A'-'Z']+
 
@@ -22,10 +22,20 @@ rule token =
      parse eof			{ EOF }
      	|":"			{ COLON }
 	|"."		  	{ PERIOD }
-	|alpha	{ keyword (Lexing.lexeme lexbuf)}
+	|alpha			{ let v = keyword (Lexing.lexeme lexbuf) in
+				  match v with
+				  |DESC -> comments 0 lexbuf ;
+				  | _ -> v }
 	|id			{ID(Lexing.lexeme lexbuf) }
 	|'\n'			{EOL}
 
+and comments level = parse
+    	|".\n" {  if level = 0 then token lexbuf
+		  else comments (level-1) lexbuf
+		}
+	|"description"  { comments (level+1) lexbuf	}
+	|_	{comments level lexbuf }
+	|eof	{Printf.printf "unterminated comment at level %d\n" level ; token lexbuf }
 
 {
 
