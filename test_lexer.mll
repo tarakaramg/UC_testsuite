@@ -52,7 +52,6 @@ and comments level = parse
 
 
 and desc s = parse
-    	|"description"  {desc "" lexbuf}
 	| ":"		{ desc s lexbuf }
 	|"#"		{let _ = Printf.printf "returning description" in DESC s} 
   	|alpha alphanum* {desc (s ^ (Lexing.lexeme lexbuf)) lexbuf} 
