@@ -29,3 +29,7 @@ test_parser.mli : test_parser.mly
 
 clean:
 	rm -f *.cmo *.cmi test_lexer.ml test_parser.ml test_parser.mli $(MAIN)
+$(shell):
+utop:
+	$ utop  -init unix.cma str.cma test_parser.cmo test_lexer.cmo test_main.cmo $(shell)
+
