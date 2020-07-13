@@ -22,7 +22,6 @@ let keyword k = try Hashtbl.find keyword_table k with Not_found -> ID k
 
 }
 
-(*let white = [' ' '\t']+*)
 let id = [^ '.' ':' '\n']+
 let alphanum = ['0'-'9' '_' '?' 'a'-'z' 'A'-'Z']
 let alpha = ['a'-'z' 'A'-'Z']+
@@ -31,27 +30,37 @@ rule my_lexer = parse
      	|[' ' '\t']+		{my_lexer  lexbuf }
      	|":"			{COLON }
 	|"."		  	{let _ = Printf.printf "My_Lexer %s matched @period.\n" (Lexing.lexeme lexbuf) in PERIOD }
-	|"(*"			{ comments 0 lexbuf }
+	|"(*"			{ comments 0 lexbuf; my_lexer lexbuf }
 	|eof			{ EOF }
 	|'\n'			{next_line lexbuf; my_lexer  lexbuf} 
 	|"\n.\n"		{ EOD}
-	|"description"		{ let _ = Printf.printf "Trying to match description\n" in desc "" lexbuf } 
+	|"description"		{ desc_comments (-1) lexbuf; desc "" lexbuf } 
 	|alpha alphanum*	{ let v = keyword (Lexing.lexeme lexbuf) in
 				       match v with
-(*				       	     |DESC -> desc 0 lexbuf ; DESC  *)
+				       	    (* |DESCT -> desc_comments (-1) lexbuf; desc "" lexbuf *)
 				  	     |_ -> v }
 	|_ as c			{print_char c; my_lexer  lexbuf}
 					
 and comments level = parse
-    	|"*)" {  if level = 0 then my_lexer lexbuf
-		  else comments (level-1) lexbuf
+    	|"*)" {  if level = 0 then ()
+		  else desc_comments (level-1) lexbuf
 		}
-	|"(*"  { comments (level+1) lexbuf	}
-	|_ 	{comments level lexbuf }
-	|eof	{Printf.printf "unterminated comment at level %d\n" level ; my_lexer lexbuf }
+	|"(*"  { desc_comments (level+1) lexbuf	}
+	|_ 	{desc_comments level lexbuf }
+	|eof	{Printf.printf "unterminated comment at level %d\n" level ; () }
+
+and desc_comments level = parse
+    	|[' ' '\t']+ {desc_comments level lexbuf }
+    	|"*)" {  if level = 0 then ()
+		  else if level > 0 then desc_comments (level-1) lexbuf
+		  else ()
+		}
+	|"(*"  { Printf.printf "We are at (* \n"; desc_comments (level+1) lexbuf	}
+	|_ 	{if level >=0 then desc_comments level lexbuf else () }
+	|eof	{Printf.printf "unterminated comment at level %d\n" level ; () }
 
 
 and desc s = parse
-	| ":"		{ desc s lexbuf }
-	|"#"		{let _ = Printf.printf "returning description" in DESC s} 
-  	|alpha alphanum* {desc (s ^ (Lexing.lexeme lexbuf)) lexbuf} 
+	|"\n.\n"		{let _ = Printf.printf "returning description" in DESC s}
+	|'\n'			{next_line lexbuf; desc (s ^ (Lexing.lexeme lexbuf)) lexbuf}
+  	|id			 {desc (s ^ (Lexing.lexeme lexbuf)) lexbuf} 

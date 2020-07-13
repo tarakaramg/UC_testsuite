@@ -24,7 +24,7 @@ stmt:
   |e1 = expr ; l = stmt { let _ = print_string "I am in parse stmt line 2 \n" in e1 :: l }
 
 expr:
-  | d = DESC   {print_string "we are at DESC Level in Parser\n"; Desc d}  
+  | d = DESC   {print_string "\n We are at DESC Level in Parser\n"; Desc d}  
   | ROOTF ; COLON  ; e1 = ID  ; PERIOD ; e2 = ID {Rootf (e1,e2)}
   | OPT; COLON; e1 = ID; PERIOD {Options e1}
   | x = ID {Var x}
