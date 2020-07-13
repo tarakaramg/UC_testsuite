@@ -19,9 +19,9 @@ let print_list lst =
 let parse (s : string) : unit =
   (*  let lexbuf = Lexing.from_string (Str.global_replace (Str.regexp "") "" s) in*)
   let lexbuf = Lexing.from_string s in
-  let _ = Printf.printf "Input string is @%s" (Bytes.to_string (lexbuf.lex_buffer)) in
+  let _ = Printf.printf "Input string is @%s\n" (Bytes.to_string (lexbuf.lex_buffer)) in
   let ctr = 
-  try  Test_parser.prog Test_lexer.token lexbuf
+    try  Test_parser.prog Test_lexer.my_lexer lexbuf
   with Parsing.Parse_error ->
 	  let p = Lexing.lexeme_start_p lexbuf in
 	    Printf.eprintf "\nParse error at line %d character %d near %s \n"
