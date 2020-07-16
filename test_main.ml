@@ -5,8 +5,8 @@ let print_expr (e:expr) =
   match e with
   |Var x -> Printf.printf "Var %s"  x
   |Desc d -> print_string ("Desc" ^ d)
-  |Rootf (r1,r2) -> print_string (r1 ^ r2)
-  |Options o -> print_string o
+  |Rootf (r1) -> print_string r1
+  |Options o -> List.iter print_string o
     
 let print_list lst =
   let rec print_elements = function

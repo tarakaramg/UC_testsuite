@@ -4,12 +4,12 @@
 type token = 
   | ROOTF
   | PERIOD
-  | OPT
+  | OPT of (string list)
   | ID of (string)
   | EOL
   | EOF
   | EOD
-  | DESC
+  | DESC of (string)
   | COLON
 
 (* This exception is raised by the monolithic API functions. *)
