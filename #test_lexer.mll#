@@ -79,7 +79,7 @@ and opt = parse
 and opt_parse s1 = parse
     	|[' ' '\t']		{opt_parse s1 lexbuf}
 	|'\n' 	    	       	{next_line lexbuf;  OPT s1}
-	|['-'] alpha alphanum* as str	{print_string str; print_string "\n"; let foo str  = String.sub str 1 ((String.length str) - 1) in  opt_parse (foo(str)::s1) lexbuf }
+	|['-'] alpha alphanum* as str	{print_string str; print_string "--\n"; let foo str  = String.sub str 1 ((String.length str) - 1) in  opt_parse (foo(str)::s1) lexbuf }
 
 
 and outcome = parse

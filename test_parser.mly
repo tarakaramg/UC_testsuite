@@ -5,10 +5,11 @@
 %token <string> ID
 %token <string> DESC
 %token PERIOD
-%token ROOTF
+%token <string> ROOT
 %token EOF
 %token EOL
 %token <string list> OPT
+%token <string list> OUT
 %token EOD
 
 %start <Test_types.expr list> prog
@@ -25,7 +26,8 @@ stmt:
 
 expr:
   | d = DESC   {print_string "\n We are at DESC Level in Parser\n"; Desc d}  
-  | ROOTF ; COLON  ; e1 = ID  ; PERIOD ; EOL {Rootf e1}
+  | e1 = ROOT {Rootf e1}
   | o = OPT  {print_string "\n We are at OPT level in Parser \n"; Options o}
-  | x = ID {print_string"\n we are at ID level in Parser \n"; Var x}
+  | ot = OUT {print_string "\n We are at Outcome level in Parser \n";Outcome ot}
+(*  | x = ID {print_string"\n we are at ID level in Parser \n"; Var x}*)
   ;
