@@ -1,7 +1,7 @@
 (* This is a test file for test suite *)
 description test
 .
-rootfile: foo.uc
+rootfile:(* test this should be OK*) foo.uc
 options: -OPT1 -OPT2 -OPT3
 outcome: success
 This is a test outcome.

@@ -31,10 +31,10 @@ rule my_lexer = parse
 	|"(*"			{ comments 0 lexbuf; my_lexer lexbuf }
 	|eof			{ EOF }
 	|'\n'			{next_line lexbuf; my_lexer lexbuf} 
-	|"description"		{ desc_comments; (*let _ =*) desc "" lexbuf (* in DESC (desc "" lexbuf); my_lexer lexbuf*) }
+	|"description"		{ desc_comments; desc "" lexbuf }
 	|"options"		{ opt lexbuf }
 	|"outcome"		{ outcome lexbuf }
-	|"rootfile"		{root lexbuf}
+	|"rootfile"		{Printf.printf " found rootfile %s " (Lexing.lexeme lexbuf); root lexbuf}
 (*	|alpha alphanum*	{ keyword (Lexing.lexeme lexbuf) }*)
 	|_ as c			{print_char c; my_lexer  lexbuf}
 					
@@ -44,12 +44,12 @@ and comments level = parse
 		}
 	|"(*"  { comments (level+1) lexbuf	}
 	|_ 	{comments level lexbuf }
-	|eof	{() }
+	|eof	{ }
 
 and root = parse
-    	|"(*"  {comments 0 lexbuf; root lexbuf}
+    	|"(*"  {comments 0 lexbuf; Printf.printf "at root %s \n" (Lexing.lexeme lexbuf); root lexbuf}
 	|":"   {root_parse "" lexbuf }
-	|_     {Printf.printf "SYNTAX ERROR"; my_lexer lexbuf }
+	|_     {let p = Lexing.lexeme_start_p lexbuf in let line_num = string_of_int(p.Lexing.pos_lnum) in raise (SyntaxError (" : expected in the line " ^ line_num ^ "rootfile: or rootfile(*comment *):")) }
 
 and root_parse s = parse
     	|'\n'		{next_line lexbuf; ROOT s }
@@ -61,7 +61,7 @@ and desc_comments = parse
 	|['\n']     {next_line lexbuf; desc_comments lexbuf }
 	|"(*"  { comments 0 lexbuf; () }
 	|_ 	{() }
-	|eof	{() }
+	|eof	{raise (SyntaxError (" Unexpected end of file ")) }
 
 and desc s = parse
 	|"\n.\n"		{new_line lexbuf; new_line lexbuf; desc_comments; DESC s }
@@ -74,12 +74,12 @@ and opt = parse
 	|['\n']			{next_line lexbuf; opt lexbuf}
 	|"(*"			{comments 0 lexbuf; opt lexbuf}
 	|":"			{opt_parse [] lexbuf}
-	|_			{(*SYNTAX ERROR *)opt_parse [] lexbuf }
-
+	|_			{let p = Lexing.lexeme_start_p lexbuf in let line_num = string_of_int(p.Lexing.pos_lnum) in raise (SyntaxError (" : expected in the line " ^ line_num ^ "options: or options(*comment *):")) }
+	
 and opt_parse s1 = parse
     	|[' ' '\t']		{opt_parse s1 lexbuf}
 	|'\n' 	    	       	{next_line lexbuf;  OPT s1}
-	|['-'] alpha alphanum* as str	{print_string str; print_string "\n"; let foo str  = String.sub str 1 ((String.length str) - 1) in  opt_parse (foo(str)::s1) lexbuf }
+	|['-'] alpha alphanum* as str	{print_string str; print_string "--\n"; let foo str  = String.sub str 1 ((String.length str) - 1) in  opt_parse (foo(str)::s1) lexbuf }
 
 
 and outcome = parse
@@ -93,7 +93,7 @@ and out_parse s1 = parse
 	|"(*" 			{comments 0 lexbuf; out_parse s1 lexbuf }
 	|"success" | "failure"  as str	{out_parse (str::s1) lexbuf }
 	|'\n'	    	      	{next_line lexbuf; out_desc s1 lexbuf}
-	|_			{print_string "SYNTAX ERROR"; out_desc s1 lexbuf }
+	|_			{let p = Lexing.lexeme_start_p lexbuf in let line_num = string_of_int(p.Lexing.pos_lnum) in raise (SyntaxError (" Syntax error in the line " ^ line_num ^ "outcome: succes/failure \n ... \n.\n ")) }	
 
 and out_desc s = parse
 	|"\n.\n"		{new_line lexbuf; new_line lexbuf; OUT s}
