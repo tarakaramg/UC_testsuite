@@ -1,8 +1,10 @@
 (* This is a test file for test suite *)
-description test
+description (*test *)
 .
-rootfile:(* test this should be OK*) foo.uc
-options: -OPT1 -OPT2 -OPT3
-outcome: success
+args (*test *): (* test this should be OK*) foo2.uc  -OPT1 -OPT2 -OPT3
+outcome: success (*this should be ignored*)
 This is a test outcome.
+.
+description
+this should be included.
 .

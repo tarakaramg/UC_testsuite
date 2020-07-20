@@ -3,11 +3,9 @@ open Str
 
 let print_expr (e:expr) =
   match e with
-  |Var x -> Printf.printf "Var :  %s"  x ; print_string "\n"
   |Desc d -> print_string ("Desc : " ^ d); print_string "\n"
-  |Rootf (r1) -> print_string r1; print_string "\n"
-  |Options o -> List.iter print_string o ; print_string "\n"
-  |Outcome ot -> List.iter print_string ot ; print_string "\n"
+  |Args o -> List.iter print_string o ; print_string "\n"
+  |Outcome (o1,o2) -> print_string o2; print_string "\n"; if o1=Success then print_string "Success \n" else print_string "Failure \n"
     
 let print_list lst =
   let rec print_elements = function
@@ -35,7 +33,7 @@ let parse (file_name : string) : unit =
 	p.Lexing.pos_lnum
 	(p.Lexing.pos_cnum - p.Lexing.pos_bol)
 	(Lexing.lexeme lexbuf);
-      failwith "Syntax error" in
+      failwith "Syntax erroor" in
   let _ = Printf.printf "\n==== Expression list returned from MAIN: ====\n" in
   print_list ctr
 
