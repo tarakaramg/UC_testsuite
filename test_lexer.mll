@@ -23,25 +23,26 @@ let alphanum = ['0'-'9' '_' '?' 'a'-'z' 'A'-'Z' '.']
 let alpha = ['a'-'z' 'A'-'Z' '.']+
 
 rule my_lexer = parse
-     	|[' ' '\t']+		{my_lexer  lexbuf }
+     	|[' ' '\t' '\r']+		{my_lexer  lexbuf }
 	|"(*"			{comments 0 lexbuf; my_lexer lexbuf }
 	|eof			{EOF }
 	|'\n'			{next_line lexbuf;  my_lexer lexbuf} 
 	|"description"		{desc_comments lexbuf}
 	|"args"			{args lexbuf }
 	|"outcome"		{outcome lexbuf }
-	|_ 			{error_raise "Something went wrong" "" lexbuf}
+	|_ 			{error_raise "Something went wrong" (Lexing.lexeme lexbuf) lexbuf}
 					
 and comments level = parse
     	|"*)"			{if level = 0 then ()
 		  		   else comments (level-1) lexbuf
 				   }
 	|"(*"  			{comments (level+1) lexbuf	}
+	|'\n'			{next_line lexbuf; comments level lexbuf}
 	|_ 			{comments level lexbuf }
 	|eof			{error_raise "Unexpected end of file" "" lexbuf }
 	
 and desc_comments = parse
-    	|[' ' '\t']+		{desc_comments lexbuf }
+    	|[' ' '\t' '\r']+		{desc_comments lexbuf }
 	|['\n']     		{next_line lexbuf; DESC (desc "" lexbuf) }
 	|"(*"  			{comments 0 lexbuf; desc_comments lexbuf }
 	|_ 			{error_raise "Text should start in a new line" "" lexbuf}
@@ -53,7 +54,7 @@ and desc s = parse
 	|eof			{error_raise "Unexpected end of file" "" lexbuf }
 
 and args = parse
-    	|[' ' '\t']+		{args lexbuf }
+    	|[' ' '\t''\r']+		{args lexbuf }
 	|['\n']			{next_line lexbuf; args lexbuf}
 	|"(*"			{comments 0 lexbuf; args lexbuf}
 	|":"			{args_parse [] lexbuf}
@@ -77,7 +78,7 @@ and outcome = parse
 	|_			{error_raise " : expected" "" lexbuf}
 	
 and out_parse o1 level = parse
-    	|[' ' '\t']+		{out_parse o1 level lexbuf}
+    	|[' ' '\t' '\r']+		{out_parse o1 level lexbuf}
 	|['\n']			{if level = 0 then error_raise "success/failure expected" "" lexbuf else next_line lexbuf ; OUT (o1, desc "" lexbuf)}
 	|"(*" 			{comments 0 lexbuf; out_parse o1 level lexbuf }
 	|"success" 		{if level = 0 then
