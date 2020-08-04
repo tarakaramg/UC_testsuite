@@ -1,6 +1,0 @@
-
-*.cmo
-*.cmi
-*.mli
-test_parser.ml
-test_lexer.ml
