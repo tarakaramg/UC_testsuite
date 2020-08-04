@@ -1,4 +1,4 @@
-type outcome = Success | Failure
+type outcome = Success | Failure | Unknown | Empty
 
 type expr = 
 | Desc of string

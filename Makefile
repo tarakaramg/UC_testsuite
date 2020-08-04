@@ -1,6 +1,6 @@
 MAIN=dsl_test
 
-OBJS =   test_types.cmo test_parser.cmo test_lexer.cmo     test_main.cmo test.cmo  
+OBJS =   test_types.cmo test_parser.cmo test_lexer.cmo     test_main.cmo   
 
 %.cmo : %.ml
 	ocamlc -g -c $<

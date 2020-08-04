@@ -18,13 +18,13 @@ let print_list lst =
 let read_file filename =
     let file = open_in filename in
     let s = really_input_string file (in_channel_length file) in
-    close_in file;printf "I am at read file";
+    close_in file; (*;printf "I am at read file";*)
     s 
 
 let parse (file_name : string) =
   let s = read_file(file_name) in
   let lexbuf = Lexing.from_string s in
-  let _ = Printf.printf "Input string is @%s\n" (Bytes.to_string (lexbuf.lex_buffer)) in
+  (*let _ = Printf.printf "Input string is @%s\n" (Bytes.to_string (lexbuf.lex_buffer)) in*)
   let ctr = 
     try  Test_parser.prog Test_lexer.my_lexer lexbuf
     with Parsing.Parse_error ->
@@ -34,27 +34,28 @@ let parse (file_name : string) =
 	(p.Lexing.pos_cnum - p.Lexing.pos_bol)
 	(Lexing.lexeme lexbuf);
       failwith "Syntax erroor" in
-  let _ = Printf.printf "\n==== Expression list returned from MAIN: ====\n" in
+(*  let _ = Printf.printf "\n==== Expression list returned from MAIN: ====\n" in
   let _ = print_list ctr in
-    ctr 
+ *)  ctr 
 
 let rec last_element y list = 
   match list with 
   | [] -> failwith "List is empty"
-  | [x] -> Array.append y [|x|]
+  | [x] -> if y=[| |] then Array.append [|""|] [|x|] else Array.append y [|x|]
   | first_el::rest_of_list -> let z = Array.append y [|first_el|] in last_element z rest_of_list
 
-let get_root (e:expr) =
-  match e with
-  |Args o -> last_element [| |] o
-  |_ -> failwith "No arguments found"
-
-let rec match_expr expression =
+                                                                   
+let rec match_expr expression f_name out_come1 out_come2  =
   match expression with
-  |[] -> failwith "No arguments found"
+  |[] -> if f_name = [| |] then failwith " Empty args "
+         else
+           if out_come1 = Empty then failwith "Outcome has to be success or failure"
+           else (f_name, out_come1, out_come2)
   |e::l -> match e with
-           |Args o -> get_root e
-           |_ -> match_expr l
+           |Args o -> let f_array = last_element [| |] o in
+                      match_expr l f_array out_come1 out_come2
+           |Outcome (o1, o2) -> match_expr l f_name o1 o2
+           |_ -> match_expr l f_name out_come1 out_come2
  
 let () = Printexc.record_backtrace true
 
@@ -73,24 +74,29 @@ let norm_stat stat =
 
 let get_f_name file_name =
 try
-  let f_name = match_expr (parse file_name)
-             in f_name
+   let f_name, out_come1, out_come2 = match_expr (parse file_name) [| |] Empty ""
+   in f_name, out_come1, out_come2
 with
 |e -> raise e
-(*
-let run filename =
-  let f_name = get_f_name filename in
-  let _ = Printf.printf "we are in run %s" filename in
-   (* pipe for feeding child process's standard output to parent *)
+
+let out_success outcome1 outcome2 s_err =
+  if outcome1 = Success then
+    if outcome2 = s_err then print_string "Test is Success"
+    else print_string "Warning:stdout doesn't match with the outcome text \n"
+  else print_string "Error:The test is not expected to succeed"
+
+let out_failure outcome1 outcome2 s_err =
+  if outcome1 = Failure then
+    if outcome2 = s_err then print_string "Test is Success"
+    else print_string "Warning:stderr doesn't match with the content of the outcome test"
+  else print_string "Error:The test expected not to Fail"
+
+let run f_name =
+  (* let f_name, out_come1, out_come2  = get_f_name filename in
+    pipe for feeding child process's standard output to parent *)
    let (out_fd_in, out_fd_out) = Unix.pipe () in
    (* pipe for feeding child process's standard error output to parent *)
    let (err_fd_in, err_fd_out) = Unix.pipe () in
-   Unix.dup2 out_fd_out Unix.stdout;
-   Unix.close out_fd_out;
-   Unix.close out_fd_in;
-   Unix.dup2 err_fd_out Unix.stderr;
-   Unix.close err_fd_out;
-   Unix.close err_fd_in;
    match Unix.fork () with
    | 0 -> (* child process *)
       Unix.dup2 out_fd_out Unix.stdout;
@@ -107,18 +113,27 @@ let run filename =
       let s_out = read_to_eof out_in in
       let err_in = Unix.in_channel_of_descr err_fd_in in
       let s_err = read_to_eof err_in in
-      let (_, stat) = Unix.wait() in 
-       match norm_stat stat with
-        None   -> printf "child didn't exit normally\n"
-      | Some n ->
-         (printf "child exited with status %d\n" n;
-          printf "stdout---\n%s---\n" s_out;
-          printf "stderr---\n%s---\n" s_err)
-       
-let test_main  =
+      let (_, stat) = Unix.wait() in
+      (norm_stat stat, s_out, s_err)
+       (*match norm_stat stat with
+         None   -> (stat, s_out, s_err)
+        |Some 0 ->  (stat, s_out,  s_err)
+        |Some n -> (out_come1, out_come2, s_out, s_err)*)
+                          
+         (*printf "child exited with status %d\n" n;
+          printf "stdout---\n%s---\n" s_out; print_string f_name.(0);
+          printf "stderr---\n%s---\n" s_err *)
+
+
+
+
+
+           
+(*       
+let ()  =
   if Array.length Sys.argv <> 2
   then (printf "wrong number of arguments\n"; exit 1)
   else (run Sys.argv.(1); exit 0)
 (* an un-caught exception results in status 2 *)
-       *)
+ *)     
     

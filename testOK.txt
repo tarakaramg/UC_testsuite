@@ -1,0 +1,7 @@
+description
+This test should go well.
+.
+
+args:  testExprNonexistingFunOK.uc
+outcome: success
+.

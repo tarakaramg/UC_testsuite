@@ -3,8 +3,14 @@
 description (*test *)
 .
 args (*test *): (* test this should be OK*) foo2.uc  -OPT0 -OPT2 -OPT3
-outcome: success (*this should be ignored*)
-This is a test outcome.
+outcome: failure (*this should be ignored*)
+foo2.uc: unknown option '-OPT0'.
+Usage: ucdsl [options] file
+  -I <dir> add directory to include search path
+  -include <dir> add directory to include search path
+  -raw-msg issue raw messages
+  -help  Display this list of options
+  --help  Display this list of options
 .
 description
 this should be included.
