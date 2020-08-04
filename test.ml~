@@ -1,0 +1,3 @@
+exception SyntaxError of string* int
+
+let foo s1 s2 = raise (SyntaxError (s1^s2, 1))
