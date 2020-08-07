@@ -85,10 +85,10 @@ let pre_walk dir =
    
 let pre_create dir =
   try
-    let _ = Sys.is_directory(dir) in pre_walk dir; exit 0
+    let _ = Sys.is_directory(dir) in pre_walk dir
   with
   |Sys_error e -> try
-                  let _ = Sys.is_directory("./"^dir) in pre_walk dir; exit 0
+                  let _ = Sys.is_directory ("./"^dir) in pre_walk ("./"^dir)
                 with
                 |Sys_error e -> (print_endline e;print_string (dir^" is not a valid directory \n"); exit 1)
   

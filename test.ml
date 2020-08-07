@@ -12,18 +12,21 @@ let walk_directory_tree dir pattern =
   let rec walk acc i = function
   | [] -> (acc)
   | dir::tail ->
-      let contents = Array.to_list (Sys.readdir dir) in
-      let contents = List.rev_map (Filename.concat dir) contents in
-      let dirs, files =
-        List.fold_left (fun (dirs,files) f ->
+     try
+       let contents = Array.to_list (Sys.readdir dir) in
+       let contents = List.rev_map (Filename.concat dir) contents in
+       let dirs, files =
+         List.fold_left (fun (dirs,files) f ->
              match (stat f).st_kind with
              | S_REG -> (dirs, f::files)  (* Regular file *)
              | S_DIR -> (f::dirs, files)  (* Directory *)
              | _ -> (dirs, files)
-          ) ([],[]) contents
-      in
-      let matched = List.filter (select) files in
-      List.iter print_endline acc;List.iter print_endline dirs;print_endline (string_of_int i); (walk (matched @ acc) (i+1) (dirs @ tail) )
+           ) ([],[]) contents    
+       in
+       let matched = List.filter (select) files in
+       List.iter print_endline acc;print_endline "dirs";List.iter print_endline dirs;print_endline (string_of_int i); (walk (matched @ acc) (i+1) (dirs @ tail) )
+     with
+     |Sys_error e -> print_endline e; walk (acc) (i+1) (tail)
   in
   walk [] 0  [dir]
 
