@@ -20,6 +20,7 @@ create*
 Fail*
 2
 enc
+tests/
 _build/
 case-study/
 fancy/

@@ -23,7 +23,7 @@ let create_test (folder:string) (file:string) log_file =
     Printf.fprintf oc "%s" (desc^args^"\n"^o_come);   (* write something *)   
     close_out oc;
   in
-  let str = folder^"/TEST created with \n"^args^"\n"^file_outcome
+  let str = folder^"/TEST created with \n"^args^"\t "^file_outcome^"\n"
     in write_log log_file str; print_endline str
       
 let create_dir file folder log_file =

@@ -11,8 +11,7 @@ let dirs_list = ref []
 
 let create_log (log:string) =
   try
-    let _ = Random.init  in
-    let file_name = log ^ string_of_int (int_of_float(Sys.time () ))^(string_of_int (Random.int 100000)) in
+    let file_name = log ^ string_of_float(Unix.time ()) in
     let folder = Unix.getcwd () in
     let oc = open_out (folder^"/"^file_name) in
     let _ = close_out oc in (folder^"/"^file_name)
