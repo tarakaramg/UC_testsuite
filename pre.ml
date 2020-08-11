@@ -1,7 +1,6 @@
 (* pre.ml *)
 open Test_types
 open Test_main
-open Test
    
 let check_ec_standard file dir =
   let id = Str.regexp "[a-z A-Z]+_?[a-z A-Z]*\.\\(uc\|ec\\)$" in
@@ -46,14 +45,6 @@ let check_file_name file_list =
                      in get_filename l str
   in
   get_filename file_list ""
-
-
-let write_log file str =
-  try
-   let out = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text] 0o666 file in
-   output_string out str;
-   close_out out
-  with e ->  print_endline (Printexc.to_string e); exit 1
                   
 let read_file filename =
   let file = open_in filename in
@@ -101,17 +92,17 @@ let out_success file stat outcome1 outcome2 s_out s_err  =
     in
     if outcome1 = Success then
       if outcome2 = s_err then ((file^"exited with exit code "^stat^"\n"^str^ "\n Test is Success"), 0)
-      else ((file^"exited with exit code "^stat^"\n"^str^ "\n Warning:std err doesn't match with the outcome text \n"),0)
-    else ((file^"exited with exit code "^stat^"\n"^str^"\n Error:The test is not expected to succeed"), 1)
+      else ((file^" exited with exit code "^stat^"\n"^str^ "\n Warning:std err doesn't match with the outcome text \n"),0)
+    else ((file^" exited with exit code "^stat^"\n"^str^"\n Error:The test is not expected to succeed"), 1)
  
 let out_failure file stat outcome1 outcome2 s_out s_err =
     let str = if (s_out = "") then ""
               else ("Warning: std out is not empty")
     in
     if outcome1 = Failure then
-      if outcome2 = s_err then (file^"exited with exit code "^stat^"\n"^str^ "\n Test is Success", 0)
-      else (file^"exited with exit code "^stat^"\n"^str^ "\n Warning: std err doesn't match with the content of the outcome test", 0)
-    else (file^"exited with exit code "^stat^"\n"^str^"\n Error: The test expected not to Fail", 1)
+      if outcome2 = s_err then (file^" exited with exit code "^stat^"\n"^str^ "\n Test is Success", 0)
+      else (file^" exited with exit code "^stat^"\n"^str^ "\n Warning: std err doesn't match with the content of the outcome test", 0)
+    else (file^" exited with exit code "^stat^"\n"^str^"\n Error: The test expected not to Fail", 1)
     
 let  manage_out (str, code) log exit_code =
   if code <> 0 then
@@ -146,7 +137,7 @@ let pre_verbose dir log_file fail_log_file =
   let _ = if (s = 0) then
             (let str = "Found 0 files" in write_log log_file str; print_endline str; exit 0)
           else
-            (let str = "Found "^string_of_int (s)^ "files" in write_log log_file str; print_endline str)
+            (let str = "Found " ^ string_of_int s ^ " files" in write_log log_file str; print_endline str)
   in
   let rec parse_list fil_list exit_code =
     match fil_list with

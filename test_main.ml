@@ -1,6 +1,9 @@
+(* test_main.ml *)
+
 open Test_types 
 open Str
 open Printf
+open Unix
    
 let print_expr (e:expr) =
   match e with
@@ -34,29 +37,42 @@ let parse (file_name : string) =
 	(p.Lexing.pos_cnum - p.Lexing.pos_bol)
 	(Lexing.lexeme lexbuf);
       failwith "Syntax error" in
-(*  let _ = Printf.printf "\n==== Expression list returned from MAIN: ====\n" in
-  let _ = print_list ctr in
- *)  ctr 
-(*
-let rec last_element y list = 
-  match list with 
-  | [] -> failwith "List is empty"
-  | [x] -> if y=[| |] then Array.append [|""|] [|x|] else Array.append y [|x|]
-  | first_el::rest_of_list -> let z = Array.append y [|first_el|] in last_element z rest_of_list
+  ctr
+  
+let write_log file str =
+  try
+    let out = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text] 0o666 file in
+    output_string out str;
+    close_out out
+  with e ->  print_endline (Printexc.to_string e); exit 1
+             
+             
+let walk_directory_tree dir pattern =
+  let re =  Str.regexp pattern in
+  (* pre-compile the regexp *)
+  let select str = Str.string_match re str 0 in
+  let rec walk acc er_string  = function
+    | [] -> (acc, er_string )
+    | dir::tail ->
+       try
+         let contents = Array.to_list (Sys.readdir dir) in
+         let contents = List.rev_map (Filename.concat dir) contents in
+         let dirs, files =
+           List.fold_left (fun (dirs,files) f ->
+               match (stat f).st_kind with
+               | S_REG -> (dirs, f::files)  (* Regular file *)
+               | S_DIR -> (f::dirs, files)  (* Directory *)
+               | _ -> (dirs, files)
+             ) ([],[]) contents    
+         in
+         let matched = List.filter (select) files in
+         walk ( matched @ acc) er_string (dirs @ tail)
+       with
+       |Sys_error e -> walk (acc) (er_string^"\n"^ e) (tail)
+  in
+  walk [] "" [dir]
 
-                                                                   
-let rec match_expr expression f_name out_come1 out_come2  =
-  match expression with
-  |[] -> if f_name = [| |] then failwith " Empty args "
-         else
-           if out_come1 = Empty then failwith "Outcome has to be success or failure"
-           else (f_name, out_come1, out_come2)
-  |e::l -> match e with
-           |Args o -> let f_array = last_element [| |] o in
-                      match_expr l f_array out_come1 out_come2
-           |Outcome (o1, o2) -> match_expr l f_name o1 o2
-           |_ -> match_expr l f_name out_come1 out_come2
- *) 
+
 let () = Printexc.record_backtrace true
 
 let read_to_eof ch =
@@ -71,14 +87,6 @@ let norm_stat stat =
   match stat with
     Unix.WEXITED n -> Some n
   | _              -> None
-(*
-let get_f_name file_name =
-try
-   let f_name, out_come1, out_come2 = match_expr (parse file_name) [| |] Empty ""
-   in f_name, out_come1, out_come2
-with
-|e -> raise e
-      *)
 
 let run folder f_name =
   (* let f_name, out_come1, out_come2  = get_f_name filename in
@@ -104,26 +112,4 @@ let run folder f_name =
       let err_in = Unix.in_channel_of_descr err_fd_in in
       let s_err = read_to_eof err_in in
       let (_, stat) = Unix.wait() in
-      (norm_stat stat, s_out, s_err) (*
-       match norm_stat stat with
-         None   -> ("None", s_out, s_err)
-        |Some 0 -> ("0", s_out,  s_err)
-        |Some n -> (string_of_int n,  s_out, s_err)
-                          
-         printf "child exited with status %d\n" n;
-          printf "stdout---\n%s---\n" s_out; print_string f_name.(0);
-          printf "stderr---\n%s---\n" s_err *)
-
-
-
-
-
-           
-(*       
-let ()  =
-  if Array.length Sys.argv <> 2
-  then (printf "wrong number of arguments\n"; exit 1)
-  else (run Sys.argv.(1); exit 0)
-(* an un-caught exception results in status 2 *)
- *)     
-    
+      (norm_stat stat, s_out, s_err)    

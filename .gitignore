@@ -14,6 +14,10 @@ dsl_test
 mytop
 test
 ent
+pre
+log*
+create*
+Fail*
 2
 enc
 _build/

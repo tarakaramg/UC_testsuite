@@ -1,6 +1,5 @@
 (* enc.ml *)
 open Test_create  
-open Test
 open Pre
    
    
@@ -59,9 +58,8 @@ let call_dir_test dir_list_local =
     in
     let b = verify_dir (List.nth dir_list_local 0) in 
     if (!create) then
-      let log_file = create_log "log" in
-      let fail_log_file = create_log "Fail" in
-      pre_create b log_file fail_log_file
+      let log_file = create_log "create" in
+      pre_create b log_file 
     else 
       pre_crawl b
    
