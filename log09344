@@ -1,0 +1,10 @@
+test
+Warning: /Users/r/DSL/test_suite/UC_testsuite/case-study/case-study.uc file doesn't match EC naming standard 
+
+Found 3files/Users/r/DSL/test_suite/UC_testsuite/testCircFunRefSingleStepexited with exit code 1
+
+ Warning: std err doesn't match with the content of the outcome test/Users/r/DSL/test_suite/UC_testsuite/case-studyexited with exit code 2
+
+ Warning: std err doesn't match with the content of the outcome test/Users/r/DSL/test_suite/UC_testsuite/testExprNonexistingFunOKexited with exit code 2
+
+ Warning: std err doesn't match with the content of the outcome testTest suite completed sucessfully 
