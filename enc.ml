@@ -16,8 +16,6 @@ let create_log (log:string) =
     let oc = open_out (folder^"/"^file_name) in
     let _ = close_out oc in (folder^"/"^file_name)
   with e ->  print_endline (Printexc.to_string e); exit 1
-
-
               
 let check_dirs anon =
 (*  let _ = print_string "we are at check_dirs \n" in*)

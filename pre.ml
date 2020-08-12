@@ -4,7 +4,7 @@ open Test_main
    
 let check_ec_standard file dir =
   let id = Str.regexp "[a-z A-Z]+_?[a-z A-Z]*\.\\(uc\|ec\\)$" in
-  if (Str.string_match id file 0 = false) then ("Warning: "^dir^"/"^ file ^ " file doesn't match EC naming standard \n")
+  if (Str.string_match id file 0 = false) then ("\n Warning: "^dir^"/"^ file ^ " file doesn't match EC naming standard ")
   else ""
   
  (* check_name contents sees if there any .ec or .uc files in the directory if yes then
@@ -20,7 +20,7 @@ let check_name contents dir =
                         then check_ec_standard e dir
                         else ""
               in let new_str = if str = "" then ""
-                               else s ^ "\n" ^ str
+                               else s ^ str
                                                  in check l new_str
   in check contents ""                
               
@@ -41,7 +41,7 @@ let check_file_name file_list =
     |[] -> s
     |e::l -> let str = if (s = "") then dir_name e
                        else
-                         (s ^ "\n" ^ dir_name e)
+                         (s ^ dir_name e)
                      in get_filename l str
   in
   get_filename file_list ""
@@ -85,24 +85,24 @@ let rec match_expr expression f_name out_come1 out_come2  =
            |Outcome (o1, o2) -> match_expr l f_name o1 o2
            |_ -> match_expr l f_name out_come1 out_come2
                
-let out_success file stat outcome1 outcome2 s_out s_err  =
+let out_success file stat (outcome1:outcome) outcome2 s_out s_err  =
     let str =
       if (s_out = "") then ""
               else ("Warning: std out is not empty")
     in
     if outcome1 = Success then
-      if outcome2 = s_err then ((file^"exited with exit code "^stat^"\n"^str^ "\n Test is Success"), 0)
-      else ((file^" exited with exit code "^stat^"\n"^str^ "\n Warning:std err doesn't match with the outcome text \n"),0)
-    else ((file^" exited with exit code "^stat^"\n"^str^"\n Error:The test is not expected to succeed"), 1)
+      if s_err = "" then ((file^" "^str^"exited with exit code "^stat^"\n"^"Test is Success"), 0)
+      else ((file^" "^str^" exited with exit code "^stat^"\n"^outcome2^"\n"^s_err^ "\nError : outcomes match but std err doesn't match with the outcome text \n"),1)
+    else ((file^" "^str^" exited with exit code "^stat^"\nError:The test is not expected to succeed"), 1)
  
 let out_failure file stat outcome1 outcome2 s_out s_err =
-    let str = if (s_out = "") then ""
+    let str  = if (s_out = "") then ""
               else ("Warning: std out is not empty")
     in
     if outcome1 = Failure then
-      if outcome2 = s_err then (file^" exited with exit code "^stat^"\n"^str^ "\n Test is Success", 0)
-      else (file^" exited with exit code "^stat^"\n"^str^ "\n Warning: std err doesn't match with the content of the outcome test", 0)
-    else (file^" exited with exit code "^stat^"\n"^str^"\n Error: The test expected not to Fail", 1)
+      if outcome2 = s_err^"\n" then (file^" exited with exit code "^stat^ "\n Test is Success", 0)
+      else (file^" "^str^" exited with exit code "^stat^"\n"^outcome2^"\n"^s_err^ "\nError: outcomes match but std err doesn't match with the content of the outcome", 1)
+    else (file^" "^str^" exited with exit code "^stat^"\n"^s_err^"\nError: The test expected not to Fail", 1)
     
 let  manage_out (str, code) log exit_code =
   if code <> 0 then
@@ -137,7 +137,7 @@ let pre_verbose dir log_file fail_log_file =
   let _ = if (s = 0) then
             (let str = "Found 0 files" in write_log log_file str; print_endline str; exit 0)
           else
-            (let str = "Found " ^ string_of_int s ^ " files" in write_log log_file str; print_endline str)
+            (let str = "Found " ^ (string_of_int s) ^" files \n" in write_log log_file str; print_endline str)
   in
   let rec parse_list fil_list exit_code =
     match fil_list with

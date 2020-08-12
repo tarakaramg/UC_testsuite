@@ -7,6 +7,7 @@ open Unix
    
 let print_expr (e:expr) =
   match e with
+  |Requires r -> print_endline ("REQ " ^ r)
   |Desc d -> print_string ("Desc : " ^ d); print_string "\n"
   |Args o -> List.iter print_string o ; print_string "\n"
   |Outcome (o1,o2) -> print_string o2; print_string "\n"; if o1=Success then print_string "Success \n" else print_string "Failure \n"
@@ -14,15 +15,16 @@ let print_expr (e:expr) =
 let print_list lst =
   let rec print_elements = function
     |[] -> print_string " NULL "
-    |e::l -> print_expr e; print_elements l
+    |e::l -> print_endline "TEST"; print_expr e; print_elements l
   in
   print_elements lst
 
 let read_file filename =
-    let file = open_in filename in
-    let s = really_input_string file (in_channel_length file) in
-    close_in file; (*;printf "I am at read file";*)
-    s 
+  let file = open_in filename in
+  let _ = print_endline filename in  
+  let s = really_input_string file (in_channel_length file)  in
+  close_in file;
+  s 
 
 let parse (file_name : string) =
   let s = read_file(file_name) in

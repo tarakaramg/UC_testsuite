@@ -3,6 +3,7 @@
 %}
 
 %token EOF
+%token <string> REQ
 %token <string> DESC
 %token <string list> ARGS
 %token  <Test_types.outcome * string> OUT
@@ -23,6 +24,7 @@ expr:
   | d = DESC   {(*print_string "\n We are at DESC Level in Parser\n";*) Desc d}
   | o = ARGS  {(*print_string "\n We are at OPT level in Parser \n";*) Args o}
   | o = OUT {(*print_string "\n We are at Outcome level in Parser \n"; *)Outcome (fst o, snd o)}
+  | r = REQ {Requires r}
   ;
 
 
