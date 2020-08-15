@@ -4,6 +4,7 @@
 *.mli
 test_parser.ml
 test_lexer.ml
+req_lexer.ml
 *.cmx
 *.uc
 *.ec
