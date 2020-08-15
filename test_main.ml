@@ -7,21 +7,28 @@ open Unix
    
 let print_expr (e:expr) =
   match e with
-  |Requires r -> print_endline ("REQ " ^ r)
-  |Desc d -> print_string ("Desc : " ^ d); print_string "\n"
-  |Args o -> List.iter print_string o ; print_string "\n"
-  |Outcome (o1,o2) -> print_string o2; print_string "\n"; if o1=Success then print_string "Success \n" else print_string "Failure \n"
+  |Requires r -> print_endline "\n____REQ____ "; print_endline r; 0
+  |Desc d -> print_endline "_____Description_____"; print_endline d; 0
+  |Args o -> print_endline "____ARGS____"; List.iter print_string o ; print_string "\n";0
+  |Outcome (o1,o2) -> let _ = print_endline "____OUTCOME____" in
+                      let _ = if o1=Success then print_string "Success \n"
+                      else if o1=Failure then print_string "Failure \n"
+                              else print_endline "Unknown"
+                      in let _ = print_endline "____OUTCOME DESCRIPTION____" in print_endline o2; 1
+                              
     
 let print_list lst =
   let rec print_elements = function
-    |[] -> print_string " NULL "
-    |e::l -> print_endline "TEST"; print_expr e; print_elements l
+    |([],_) -> print_string "______END______\n"
+    |(e::l, er_int) -> let er = print_expr e  in
+             if (er = 1 && er_int = 1) then
+               (print_endline ("___ERROR: Multiple outcomes___"); print_elements (l ,(er_int+er)))
+             else print_elements (l, (er_int+er))
   in
-  print_elements lst
+  print_elements (lst,0)
 
 let read_file filename =
   let file = open_in filename in
-  let _ = print_endline filename in  
   let s = really_input_string file (in_channel_length file)  in
   close_in file;
   s 
@@ -90,9 +97,9 @@ let norm_stat stat =
     Unix.WEXITED n -> Some n
   | _              -> None
 
-let run folder f_name =
-  (* let f_name, out_come1, out_come2  = get_f_name filename in
-    pipe for feeding child process's standard output to parent *)
+let run folder (f_name: string array) =
+  (*    pipe for feeding child process's standard output to parent *)
+  (* let _ = print_endline folder; List.iter print_endline (Array.to_list f_name) in *)
    let (out_fd_in, out_fd_out) = Unix.pipe () in
    (* pipe for feeding child process's standard error output to parent *)
    let (err_fd_in, err_fd_out) = Unix.pipe () in
@@ -105,7 +112,7 @@ let run folder f_name =
       Unix.close err_fd_out;
       Unix.close err_fd_in;
       Unix.chdir folder;
-      Unix.execvp "ucdsl" f_name
+      Unix.execvp (Array.get f_name 0) f_name
    | _ ->  (* parent (original) process *)
       Unix.close out_fd_out;
       Unix.close err_fd_out;
@@ -113,5 +120,7 @@ let run folder f_name =
       let s_out = read_to_eof out_in in
       let err_in = Unix.in_channel_of_descr err_fd_in in
       let s_err = read_to_eof err_in in
+      let _ = Unix.close out_fd_in in
+      let _ = Unix.close err_fd_in in
       let (_, stat) = Unix.wait() in
       (norm_stat stat, s_out, s_err)    

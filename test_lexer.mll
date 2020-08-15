@@ -19,8 +19,9 @@ let error_raise s1 s2 lexbuf=
 
 let line = [^ '\n']* ['\n']
 let id = [^ '\n' ' ' '\t']+
-let alphanum = ['0'-'9' '_' '?' 'a'-'z' 'A'-'Z' '.']
+let alphanum = ['0'-'9' '_' 'a'-'z' 'A'-'Z' '.']
 let alpha = ['a'-'z' 'A'-'Z' '.']+
+let file = ['a'-'z' 'A'-'Z'  '-' '0'-'9' '.' '_']
 
 rule my_lexer = parse
      	|[' ' '\t' '\r']+	{my_lexer  lexbuf }
@@ -30,7 +31,8 @@ rule my_lexer = parse
 	|"description"		{desc_comments lexbuf}
 	|"args"			{args lexbuf }
 	|"outcome"		{outcome lexbuf }
-	|_ 			{error_raise "Something went wrong" (Lexing.lexeme lexbuf) lexbuf}
+	|_ 			{error_raise "Something went wrong"
+				 (Lexing.lexeme lexbuf) lexbuf}
 					
 and comments level = parse
     	|"*)"			{if level = 0 then ()
@@ -66,7 +68,9 @@ and args_parse s1 = parse
 	|'\n' 	    	       	{next_line lexbuf;  ARGS s1}
 	|"-" alpha alphanum* as str	{args_parse (s1@[str]) lexbuf}
 	|alpha alphanum* as str	        {args_parse (s1@[str]) lexbuf}
-	|_     		        {error_raise "Unexpected character in args " (Lexing.lexeme lexbuf) lexbuf }
+	|file+ as str	 	        {args_parse (s1@[str]) lexbuf}
+	|_     		        {error_raise "Unexpected character in args "
+				(Lexing.lexeme lexbuf) lexbuf }
 	|eof			{error_raise "Unexptected end of file " "" lexbuf}
 
 
@@ -74,20 +78,22 @@ and outcome = parse
     	|[' ' '\t']		{outcome lexbuf }
 	|['\n']			{next_line lexbuf; outcome lexbuf}
 	|"(*"			{comments 0 lexbuf; outcome lexbuf}
-	|":"			{out_parse Success 0 lexbuf}
+	|":"			{out_parse Success false lexbuf}
 	|_			{error_raise " : expected" "" lexbuf}
 	
-and out_parse o1 level = parse
-    	|[' ' '\t' '\r']+		{out_parse o1 level lexbuf}
-	|['\n']			{if level = 0 then error_raise "success/failure expected" "" lexbuf else next_line lexbuf ; OUT (o1, desc "" lexbuf)}
-	|"(*" 			{comments 0 lexbuf; out_parse o1 level lexbuf }
-	|"success" 		{if level = 0 then
-				    let o1 = Success in out_parse o1 (level+1) lexbuf
+and out_parse o1 bool = parse
+    	|[' ' '\t' '\r']+		{out_parse o1 bool lexbuf}
+	|['\n']			{if bool = false
+				    then error_raise "success/failure expected" "" lexbuf
+	     			    else next_line lexbuf ; OUT (o1, desc "" lexbuf)}
+	|"(*" 			{comments 0 lexbuf; out_parse o1 bool lexbuf }
+	|"success" 		{if bool = false then
+				 let o1 = Success in out_parse o1 true lexbuf
 				 else
-				    error_raise ((Lexing.lexeme lexbuf) ^ " is redundant") "" lexbuf
+				 error_raise ((Lexing.lexeme lexbuf) ^ " is redundant") "" lexbuf
 				}
-	|"failure"		{if level = 0 then
-				  let o1= Failure in out_parse o1 (level+1) lexbuf
+	|"failure"		{if bool = false then
+				  let o1= Failure in out_parse o1 true lexbuf
 				 else
 				  error_raise "" ((Lexing.lexeme lexbuf)^" is redundant") lexbuf }
 	|_			{error_raise "" "Syntax is outcome: succes/failure \n ... \n.\n " lexbuf}	

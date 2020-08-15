@@ -1,6 +1,8 @@
 (* enc.ml *)
 open Test_create  
 open Pre
+open Test_main
+   
    
    
 let verbose = ref false
@@ -44,7 +46,8 @@ let pre_crawl dir =
   else if not (!verbose && !quiet) then pre_med dir log_file fail_log_file
 
 let pre_debug file =
-  if Sys.file_exists file then (let _ = parse file in exit 0)
+  if Sys.file_exists file then (print_list (parse file); exit 0)
+  else (print_endline "Error: File doesnot exist"; exit 1)
      
 
 let call_dir_test dir_list_local =
