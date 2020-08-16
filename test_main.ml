@@ -7,25 +7,36 @@ open Unix
    
 let print_expr (e:expr) =
   match e with
-  |Requires r -> print_endline "\n____REQ____ "; print_endline r; 0
-  |Desc d -> print_endline "_____Description_____"; print_endline d; 0
-  |Args o -> print_endline "____ARGS____"; List.iter print_string o ; print_string "\n";0
-  |Outcome (o1,o2) -> let _ = print_endline "____OUTCOME____" in
+  |Requires r -> print_endline "Requires"; print_endline r; print_endline "End of Requires"
+  |Desc d -> print_endline "Description"; print_endline d; print_endline "End of description"
+  |Args o -> print_endline "ARGS"; List.iter print_endline o ; print_string "\nEnd of ARGS\n"
+  |Outcome (o1,o2) -> let _ = print_endline "OUTCOME" in
                       let _ = if o1=Success then print_string "Success \n"
                       else if o1=Failure then print_string "Failure \n"
-                              else print_endline "Unknown"
-                      in let _ = print_endline "____OUTCOME DESCRIPTION____" in print_endline o2; 1
+                              else print_endline "Unknown\n"
+                      in let _ = print_endline "Outcome description\n" in
+                         print_endline o2;
+                         print_endline "End of outcome description\n"
                               
     
 let print_list lst =
-  let rec print_elements = function
-    |([],_) -> print_string "______END______\n"
-    |(e::l, er_int) -> let er = print_expr e  in
-             if (er = 1 && er_int = 1) then
-               (print_endline ("___ERROR: Multiple outcomes___"); print_elements (l ,(er_int+er)))
-             else print_elements (l, (er_int+er))
+  let rec print_elements er args = function
+    |[] -> print_string "______END______\n"; args
+    |e::l -> match e with
+                |Args o -> print_expr e; print_elements er (o@args) l
+                |Outcome (o1, o2) ->  if er <> 0 then
+                                        (print_endline "ERROR: Multiple outcomes";
+                                         print_expr e;
+                                         print_elements (er+1) args l)
+                                      else
+                                        (print_expr e;
+                                         print_elements (er+1) args l)
+                |_ -> print_expr e; print_elements er args l
   in
-  print_elements (lst,0)
+  let arg_list = print_elements 0 [] lst in
+  match arg_list with
+  |[] -> print_endline "Warning: Empty arguments"
+  |_ -> ()
 
 let read_file filename =
   let file = open_in filename in
@@ -99,7 +110,7 @@ let norm_stat stat =
 
 let run folder (f_name: string array) =
   (*    pipe for feeding child process's standard output to parent *)
-  (* let _ = print_endline folder; List.iter print_endline (Array.to_list f_name) in *)
+(*  let _ = print_endline folder; List.iter print_endline (Array.to_list f_name) in*)
    let (out_fd_in, out_fd_out) = Unix.pipe () in
    (* pipe for feeding child process's standard error output to parent *)
    let (err_fd_in, err_fd_out) = Unix.pipe () in

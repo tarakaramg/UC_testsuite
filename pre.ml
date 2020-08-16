@@ -73,10 +73,9 @@ let parse (file_name : string) =
 let rec last_element y list = 
   match list with 
   | [] -> failwith "List is empty"
-  | [x] -> if y=[| |] then [|x|] else Array.append [|x|] y
-  | first_el::rest_of_list -> let z = Array.append [|first_el|] y in last_element z rest_of_list
-
-                                                                   
+  | [x] -> if y=[| |] then [|x|] else Array.append y [|x|]
+  | first_el::rest_of_list -> let z = Array.append y [|first_el|] in last_element z rest_of_list
+              
 let rec match_expr expression f_name out_come1 out_come2 number =
   match expression with
   |[] -> if f_name = [| |] then failwith " Empty args "
