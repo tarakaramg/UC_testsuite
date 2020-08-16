@@ -112,7 +112,7 @@ let out_failure file stat outcome1 outcome2 s_out s_err =
              "\nError: outcomes match but std err doesn't match with the outcome. 
               Outcome in TEST file is:\n"^outcome2^"\n std err is:\n"^s_err),1)
     else ((file^"\nexited with exit code "^stat^ str^
-             "\nError:The test is not expected to succeed"), 1)
+             "\nError:The test is not expected to fail"), 1)
  
     
 let  manage_out (str, code) log exit_code =
