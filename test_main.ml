@@ -1,6 +1,7 @@
 (* test_main.ml *)
 
-open Test_types 
+open Test_types
+open Test_log
 open Str
 open Printf
 open Unix
@@ -18,7 +19,15 @@ let print_expr (e:expr) =
                          print_endline o2;
                          print_endline "End of outcome description\n"
                               
-    
+let get_desc lst =
+  let rec desc lst_d str =
+    match lst_d with
+    |[] -> str
+    |e::l -> match e with
+             |Desc d -> desc l str^d
+             |_ -> desc l str
+  in desc lst ""
+                         
 let print_list lst =
   let rec print_elements er args = function
     |[] -> print_string "______END______\n"; args
@@ -59,13 +68,6 @@ let parse (file_name : string) =
       failwith "Syntax error" in
   ctr
   
-let write_log file str =
-  try
-    let out = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text] 0o666 file in
-    output_string out str;
-    close_out out
-  with e ->  print_endline (Printexc.to_string e); exit 1
-             
              
 let walk_directory_tree dir pattern =
   let re =  Str.regexp pattern in

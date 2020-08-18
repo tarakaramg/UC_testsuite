@@ -1,7 +1,7 @@
 (*test_create.ml *)
 open Test_main
 open Test_types   
-
+open Test_log
 
 let parse_req (file_name : string) =
   let _ = print_endline file_name in
@@ -32,7 +32,7 @@ let rec match_req lst req_list =
              else match_req l ([r]@req_list)
   
              
-let create_test file_to_parse (folder:string) (file:string) log_file =
+let create_test file_to_parse (folder:string) (file:string)  =
   let file_a = Array.append [|"ucdsl"|] [|file|] in 
   let dir = Filename.dirname file_to_parse in
   let rec cp_requires_files (list_of_req:string list) str_to_return =
@@ -78,14 +78,14 @@ let create_test file_to_parse (folder:string) (file:string) log_file =
             else
               "Test creationg failed at "^folder
   in
-  write_log log_file (str^str_to_file); print_endline (str^str_to_file)
+  write_log "log" (str^str_to_file); print_endline (str^str_to_file)
 
   
-let create_dir file folder log_file =
+let create_dir file folder =
   let stat_mkdir, s_out_mkdir, s_err_mkdir  =
     run "." [|"mkdir"; folder |] in
   if stat_mkdir = Some 0 then 
-    let ic = Str.split (Str.regexp "/") file in
+    (let ic = Str.split (Str.regexp "/") file in
     let file_to_write  = List.nth ic ((List.length ic)-1) in
     let stat, s_out, s_err = (*print_endline ("cp "^file^" "^ folder^"/"^file_to_write);*)
                              run "."  [|"cp"; file; folder^"/" |] in
@@ -96,19 +96,15 @@ let create_dir file folder log_file =
                (file^" copied to "^folder^"\n")
                 else ""
     in
-    write_log log_file (folder^" created \n"^str2^str3);
+    write_log "log" (folder^" created \n"^str2^str3);
     print_endline  (folder^" created \n"^str2^str3);
-    create_test file folder file_to_write log_file;
-    ""
+    create_test file folder file_to_write;)
   else
-    ( write_log log_file ("Error:"^s_err_mkdir);
+    ( write_log "log" ("Error:"^s_err_mkdir);
       print_endline ("Error:"^s_err_mkdir);
-      "Error:"^s_err_mkdir
     )
-
-(*      let _ = run folder [|"cp "; file ^" "^folder^"/"^  file_to_write) *)
                    
-let make_dir file log_file =
+let make_dir file  =
   let folder = String.sub file 0 (String.length file -3) in
   let (b: bool)  = 
     try
@@ -118,19 +114,21 @@ let make_dir file log_file =
   in
   if (b) then (
     let str = "abort: " ^ folder ^ " already exists, I cannot work with leftover files \n"
-    in write_log log_file str;
+    in write_log "log" str;
        print_endline str;
        exit 1)
-  else create_dir file folder log_file
+  else create_dir file folder
   
-let pre_walk dir log_file =
+(* pre_walk creates a list of all .uc files in a given directory dir *)
+  
+let pre_walk dir  =
   let rec one_file filelist str =
     match filelist with
     |[] -> if str = "" then
              (print_endline "Task is Success \n"; exit 0)
            else
              (print_endline "Completed with the following issues"; print_endline str; exit 1)
-    |e::l -> let _ =  make_dir e log_file in one_file l str
+    |e::l -> let _ =  make_dir e in one_file l str
   in
   try
     let (file_list, str) =  walk_directory_tree dir ".*uc$" in
@@ -139,12 +137,14 @@ let pre_walk dir log_file =
     else one_file file_list str
   with
   |Sys_error e -> print_endline e; exit 1
-                  
-let pre_create dir log_file  =
+
+(* pre_create pretty much checks whether given input is for form /../dir or dir *)
+
+let pre_create dir  =
   try
-    let _ = Sys.is_directory(dir) in pre_walk dir log_file
+    let _ = Sys.is_directory(dir) in pre_walk dir 
   with
   |Sys_error e -> try
-                  let _ = Sys.is_directory ("./"^dir) in pre_walk ("./"^dir) log_file
+                  let _ = Sys.is_directory ("./"^dir) in pre_walk ("./"^dir)
                 with
-                |Sys_error e -> (print_endline e;print_string (dir^" is not a valid directory \n"); exit 1)
+                |Sys_error e -> (print_endline e; exit 1)

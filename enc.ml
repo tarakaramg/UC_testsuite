@@ -1,6 +1,7 @@
 (* enc.ml *)
 open Test_create  
 open Pre
+open Test_log
 open Test_main
    
    
@@ -11,13 +12,6 @@ let quiet = ref false
 let create = ref false
 let dirs_list = ref []
 
-let create_log (log:string) =
-  try
-    let file_name = log ^ string_of_float(Unix.time ()) in
-    let folder = Unix.getcwd () in
-    let oc = open_out (folder^"/"^file_name) in
-    let _ = close_out oc in (folder^"/"^file_name)
-  with e ->  print_endline (Printexc.to_string e); exit 1
               
 let check_dirs anon =
 (*  let _ = print_string "we are at check_dirs \n" in*)
@@ -39,11 +33,12 @@ let verify_dir dir =
 
 
 let pre_crawl dir =
-  let log_file = create_log "log" in
-  let fail_log_file = create_log "Fail" in
-  if !verbose then pre_verbose dir log_file fail_log_file
-  else if !quiet then pre_quiet dir log_file fail_log_file
-  else if not (!verbose && !quiet) then pre_med dir log_file fail_log_file
+  let _ = log_dir := dir in
+  let _ = create_log dir in
+  let _ = create_fail_log dir in
+  if !verbose then pre_verbose dir 
+  else if !quiet then pre_verbose dir
+  else if not (!verbose && !quiet) then pre_verbose dir
 
 let pre_debug file =
   if Sys.file_exists file then (print_list (parse file); exit 0)
@@ -56,11 +51,11 @@ let call_dir_test dir_list_local =
     in
     let _ = if !debug then ( pre_debug (List.nth dir_list_local 0))
     in
-    let b = verify_dir (List.nth dir_list_local 0) in 
+    let b = verify_dir (List.nth dir_list_local 0) in
+    let _ = create_log b in 
     if (!create) then
-      let log_file = create_log "create" in
-      pre_create b log_file 
-    else 
+      pre_create b
+    else
       pre_crawl b
    
 let main =
