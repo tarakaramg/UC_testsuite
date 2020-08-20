@@ -3,8 +3,16 @@ open Test_types
 open Test_main
 open Test_log
    
+   
+let verbose = ref false
+let debug = ref false
+let quiet = ref false
+let create = ref false
 
 let log_str = ref ""
+let sec_str = ref ""
+let desc_str = ref ""
+            
 (* check_ec_standard checkes .uc anc .ec files for naming standard.
 The file name shoudl start with a letter and can contain numbers and a '_' *)
    
@@ -75,47 +83,91 @@ let rec match_expr expression f_name out_come1 out_come2 number =
            |Outcome (o1, o2) -> if number = 0 then match_expr l f_name o1 o2 (number+1)
                                 else failwith "Multiple outcomes are not allowed"
            |_ -> match_expr l f_name out_come1 out_come2 number
-               
+
+
+let create_conflict file outcome1 outcome2 =
+  let dir = Filename.dirname file in
+  let file_name = dir^"/"^"CONFLICT" in
+  if Sys.file_exists(file_name) then
+    log_str := !log_str^" Error: "^file_name^" exists"
+  else 
+    begin
+      let s = read_file file in
+      let s2 = s^"\noutcome:"^outcome1^"\n"^outcome2^".\n" in
+      let _ = write_log file_name s2 in
+      log_str := !log_str^"\n"^file_name^" created"
+    end
+  
+  
 let rec parse_file file code =
- try
-   let f_name, out_come1, out_come2 = match_expr (parse file) [| |] Empty "" 0
-   in  let (stat, s_out, s_err) = run (String.sub file 0 (String.length file -5)) (Array.append [|"ucdsl"|] f_name) in
-       let _ = if s_out <> "" then
-                 log_str := !log_str^"Warning: std out is not empty\n" in
+  let parse_list = parse file in
+  let _ = desc_str := !log_str ^ (get_desc parse_list)^"-----End of description-----\n" in
+  try
+   let f_name, out_come1, out_come2 = match_expr parse_list [| |] Empty "" 0
+   in  let (stat, s_out) = run (String.sub file 0 (String.length file -5)) (Array.append [|"ucdsl"|] f_name) in
        match stat with
-       |Some 0 -> (match out_come1 with
-                  |Success -> if s_err = "" then
-                                (log_str := !log_str ^ "Test passed - Outcome is success " 
-                                                       ^"and exit code is 0\n"; code)
+       |Some 0 -> begin match out_come1 with
+                  |Success -> if s_out = "" then
+                                (log_str := !log_str ^ "**Test passed - Outcome is success " 
+                                                       ^"and exit code is 0"; code)
                               else
                                 (log_str := !log_str ^
-          "Test failed - std err expected to be empty\nOutcome is sucess and exit code is 0\n";
-                                code+1)
+        "->Test failed - *std out expected to be empty*\nOutcome is sucess and exit code is 0"
+                                ;create_conflict file "unknown" s_out; code+1)
                   |Failure -> log_str := !log_str ^
-                     "Test failed - Exit code is 0 but outcome is Failure\n"^s_err; code+1
+                     "->Test failed - *Exit code is 0 but outcome is Failure*\n"^s_out; code+1
                   |_ -> (log_str := !log_str ^ "Test failed - Exit code 0 unknown outcome";
-                         code+1))
-       |None -> (let _ = log_str := (!log_str) ^ "Test failed - process did not exit normally"
-                in (code+1))
-       |Some n -> (match out_come1 with
-                  |Failure -> (if s_err = out_come2 then
+                         create_conflict file "unknown" s_out; code+1)
+                  end
+       |None -> (let _ = log_str := (!log_str) ^ "->Test failed - *ucdsl did not exit normally*"
+                in create_conflict file "unknown" s_out;(code+1))
+       |Some n -> begin match out_come1 with
+                  |Failure -> (if s_out = out_come2 then
                                  (log_str := !log_str ^
-                "Test passed - Outcome is failure and exit code is "^string_of_int n; code)
+                "**Test passed - Outcome is failure and exit code is "^string_of_int n; code)
                                else
                                  (log_str := !log_str ^
-                                     "Test failed - std err mismatch with outcome description\n"
-                                     ^"Outcome is failure and exit code is "
-                                     ^ string_of_int n^"\n"
-                                     ^"std err is of ucdsl is:\n"^s_err;
+                                 "->Test failed - *std err mismatch* with outcome description"
+                                     ^"\nOutcome is failure and exit code is "
+                                     ^ string_of_int n;
+                                  create_conflict file "failure" s_out;
+                                  sec_str := "\n"^"-------"
+                                     ^"std err is of ucdsl is:-------\n"
+                                     ^s_out
+                                     ^"\n-------Expected error according to outcome is:-------\n"
+                                     ^out_come2^"______________________________";
                                   code+1))
-                  |Success -> (log_str := (!log_str ^
-                                      "Test failed - Exit code 0 expected but exit code is "
-                                       ^string_of_int n^"std err is:\n"^s_err); code+1)                   
-                  |_ -> (log_str := !log_str ^ "Test failed - unknown outcome;\n" 
-                                               ^"exit code is"^string_of_int n^"\n"; code+1))
+                  |Success ->  (log_str := !log_str
+                                      ^"->Test failed - Exit code *0 expected* but exit code is "
+                                      ^string_of_int n;
+                                sec_str := "\nstd err is:\n"^s_out;
+                                create_conflict file "failure" s_out;code+1)
+                  |_ -> (log_str := !log_str ^ "->Test failed - *unexpected outcome*;\n" 
+                                    ^"exit code is "^string_of_int n;
+                         create_conflict file "unknown" s_out;code+1)
+                  end
        with
        |e -> let log_err = Printexc.to_string e in log_str := !log_str ^log_err^"\n"; (code+1)
-                              
+
+let log_fun () =
+  let _ = 
+  if !verbose then
+    (write_log "log" (!desc_str
+                      ^ !log_str ^ !sec_str^"\n........................");
+     print_endline (!desc_str
+                      ^ !log_str ^ !sec_str^"\n........................"))
+  else if !quiet then
+    write_log "log" (!log_str ^ !sec_str)
+  else
+    (write_log "log" (!log_str ^ !sec_str);
+     print_endline !log_str;)
+    
+     in
+     log_str := "";
+     sec_str := "";
+     desc_str := ""
+  
+                                                   
 let pre_verbose dir  =
   let file_list, error_string  =  walk_directory_tree dir ".*TEST$" in
   (* get TEST files list *)
@@ -123,111 +175,30 @@ let pre_verbose dir  =
              (let _ = write_log "log" error_string in
                      print_endline error_string)
   in
- (* let file_standard_error = check_file_name file_list in
-  let _ = write_log log_file file_standard_error in
-  let _ = print_endline file_standard_error in *)
   let s = List.length file_list in
   let _ = if (s = 0) then
-            (let str = "Found 0 files" in write_log "log"str; print_endline str; exit 0)
+            (let _ = log_str := "Found 0 files" in log_fun(); exit 0)
           else
-            (let str = "Found " ^ (string_of_int s) ^
-                         " files \n" in write_log "log"str; print_endline str)
+            let _ = log_str := "Found " ^ (string_of_int s) ^
+                         " files \n" in log_fun()
   in
   let rec parse_list fil_list exit_code =
     match fil_list with
     |[] -> if (exit_code = 0) then
              (let _ = log_str  := !log_str^
-            "Test suite completed sucessfully all tess are successful\nlog file is "^dir^"log" in
-              write_log "log" !log_str;
-              print_endline !log_str;
-              exit 0)
+            "Test suite completed sucessfully all tests are success\nlog file is "^dir^"log" in
+             log_fun(); exit 0)
            else (
              let _ = log_str := !log_str^ "Total " ^string_of_int exit_code ^
-                          " errors found, see Fail log\n"^dir^"/fail" in
-             write_log "log" !log_str;
-             write_log "fail" !log_str;
-             print_endline !log_str;
+                          " errors found, see  log\n"^dir^"/log" in
+             log_fun();
              exit 1)
     |e::l -> let _ = log_str := !log_str^e^"\n" in
              let _ = dir_name e in
-             let _ = log_str := !log_str^get_desc (parse e) in
+             let _ = log_str := !log_str in
              let code = parse_file e exit_code in
-             write_log "log" (!log_str^"\n");
-             print_endline (!log_str^"\n");
-             log_str := "";
-             parse_list l code
+             log_fun ();parse_list l code
   in parse_list file_list 0
-
-
-(* Quielt mode prints nothing but logs everything as verbose and errors in an additonal fail log*)
-(*                                 
-let pre_quiet dir "fail" =
-  let file_list, error_string  =  walk_directory_tree dir ".*TEST$" in
-  (* get TEST files list *)
-  let _ = if (error_string <> "") then
-             write_log "log" error_string
-  in
-  let file_standard_error = check_file_name file_list in
-  let _ = write_log "log"file_standard_error in
-  let s = List.length file_list in
-  let _ = if (s = 0) then
-            (let str = "Found 0 files" in write_log "log" str; exit 0)
-          else
-            (let str = "Found "^string_of_int (s)^ " files" in write_log "log" str)
-  in
-  let rec parse_list fil_list exit_code =
-    match fil_list with
-    |[] -> if (exit_code = 0) then
-             (let str = "Test suite completed sucessfully \n" in
-              write_log "log" str;
-              exit 0)
-           else (
-             let str =  "Total " ^string_of_int exit_code ^
-                          " errors found, see Fail log file "^"fail" in
-             write_log "log" str;
-             exit 1)
-    |e::l -> let (str, code) = parse_file e "fail" exit_code in
-              write_log "log" str; parse_list l code
-  in parse_list file_list 0
-
-(* pre_med comes into the picture by defualt i.e., when both verbose and quiet mode are false.
-This is same thing as verbose except only warnings and errors are displayed *)
-   
-let pre_med dir "fail"  =
-  let file_list, error_string  =  walk_directory_tree dir ".*TEST$" in
-  (* get TEST files list *)
-  let _ = if (error_string <> "") then
-            let _ = write_log "log" error_string in
-            print_endline error_string
-  in
-  let file_standard_error = check_file_name file_list in
-  let _ = write_log "log" file_standard_error in
-  let _ = print_endline file_standard_error in
-  let s = List.length file_list in
-  let _ = if (s = 0) then
-            (let str = "Found 0 files" in write_log "log" str; print_endline str; exit 0)
-          else
-            (let str = "Found "^string_of_int (s)^ " files" in
-             write_log "log" str; print_endline str)
-  in
-  let rec parse_list fil_list exit_code =
-    match fil_list with
-    |[] -> (if (exit_code = 0) then
-             (let str = "Test suite completed sucessfully \n" in
-              write_log "log" str; print_endline str;
-              exit 0)
-           else (
-              let str =  "Total " ^string_of_int exit_code ^
-                           " errors found, see Fail log "^"fail"^"\n" in
-             write_log "log" str;
-             print_endline str;
-             exit 1))
-    |e::l -> let (str, code) = parse_file e  exit_code in
-             if (exit_code = code) then ( write_log "log" str; parse_list l code)
-             else (write_log "log" str; print_endline str; parse_list l code)
-  in parse_list file_list 0
-    
- *)
        
 
                   

@@ -112,28 +112,20 @@ let norm_stat stat =
 
 let run folder (f_name: string array) =
   (*    pipe for feeding child process's standard output to parent *)
-(*  let _ = print_endline folder; List.iter print_endline (Array.to_list f_name) in*)
-   let (out_fd_in, out_fd_out) = Unix.pipe () in
-   (* pipe for feeding child process's standard error output to parent *)
-   let (err_fd_in, err_fd_out) = Unix.pipe () in
+   let (pipe_in, pipe_out) = Unix.pipe () in
    match Unix.fork () with
    | 0 -> (* child process *)
-      Unix.dup2 out_fd_out Unix.stdout;
-      Unix.close out_fd_out;
-      Unix.close out_fd_in;
-      Unix.dup2 err_fd_out Unix.stderr;
-      Unix.close err_fd_out;
-      Unix.close err_fd_in;
+      Unix.close pipe_in;
+      (* send both stdout and stderr into the pipe *)
+      Unix.dup2 pipe_out Unix.stdout;
+      Unix.dup2 pipe_out Unix.stderr;
+      Unix.close pipe_out;
       Unix.chdir folder;
       Unix.execvp (Array.get f_name 0) f_name
    | _ ->  (* parent (original) process *)
-      Unix.close out_fd_out;
-      Unix.close err_fd_out;
-      let out_in = Unix.in_channel_of_descr out_fd_in in
+      Unix.close pipe_out;
+      let out_in = Unix.in_channel_of_descr pipe_in in
       let s_out = read_to_eof out_in in
-      let err_in = Unix.in_channel_of_descr err_fd_in in
-      let s_err = read_to_eof err_in in
-      let _ = Unix.close out_fd_in in
-      let _ = Unix.close err_fd_in in
+      let () = close_in out_in in
       let (_, stat) = Unix.wait() in
-      (norm_stat stat, s_out, s_err)    
+      (norm_stat stat, s_out)    

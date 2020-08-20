@@ -6,10 +6,6 @@ open Test_main
    
    
    
-let verbose = ref false
-let debug = ref false
-let quiet = ref false
-let create = ref false
 let dirs_list = ref []
 
               
@@ -31,14 +27,14 @@ let verify_dir dir =
                                  print_endline (dir^" is not a valid directory \n"); exit 1)
 (* needs to be logged? *)
 
-
+(*
 let pre_crawl dir =
   let _ = log_dir := dir in
-  let _ = create_log dir in
-  let _ = create_fail_log dir in
+  let _ = create_fail_log () in
   if !verbose then pre_verbose dir 
   else if !quiet then pre_verbose dir
   else if not (!verbose && !quiet) then pre_verbose dir
+                                        *)
 
 let pre_debug file =
   if Sys.file_exists file then (print_list (parse file); exit 0)
@@ -52,11 +48,11 @@ let call_dir_test dir_list_local =
     let _ = if !debug then ( pre_debug (List.nth dir_list_local 0))
     in
     let b = verify_dir (List.nth dir_list_local 0) in
-    let _ = create_log b in 
+    let _ = create_log () in 
     if (!create) then
       pre_create b
     else
-      pre_crawl b
+      pre_verbose b
    
 let main =
 begin

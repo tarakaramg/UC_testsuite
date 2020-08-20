@@ -6,14 +6,13 @@ test_parser.ml
 test_lexer.ml
 req_lexer.ml
 *.cmx
-*.uc
-*.ec
 *.o
 *.out
 *~
+.DS_Store
 dsl_test
 mytop
-test
+test/
 ent
 pre
 log*
@@ -21,7 +20,6 @@ create*
 Fail*
 2
 enc
-tests/
 _build/
 case-study/
 fancy/
