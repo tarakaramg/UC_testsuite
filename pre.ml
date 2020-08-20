@@ -89,7 +89,7 @@ let create_conflict file outcome1 outcome2 =
   let dir = Filename.dirname file in
   let file_name = dir^"/"^"CONFLICT" in
   if Sys.file_exists(file_name) then
-    log_str := !log_str^" Error: "^file_name^" exists"
+    log_str := !log_str^"\nError: "^file_name^" exists"
   else 
     begin
       let s = read_file file in
@@ -115,7 +115,7 @@ let rec parse_file file code =
         "->Test failed - *std out expected to be empty*\nOutcome is sucess and exit code is 0"
                                 ;create_conflict file "unknown" s_out; code+1)
                   |Failure -> log_str := !log_str ^
-                     "->Test failed - *Exit code is 0 but outcome is Failure*\n"^s_out; code+1
+                     "->Test failed - *Exit code is 0 but outcome is Failure*"^s_out; code+1
                   |_ -> (log_str := !log_str ^ "Test failed - Exit code 0 unknown outcome";
                          create_conflict file "unknown" s_out; code+1)
                   end
