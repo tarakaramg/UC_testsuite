@@ -1,6 +1,6 @@
-default: main
+default: dsl-test
 
-main: main.native
+main: dsl-test.native
 
 %.native: 
 	ocamlbuild -use-ocamlfind $@
