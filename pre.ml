@@ -101,7 +101,10 @@ let create_conflict file outcome1 outcome2 =
   
 let rec parse_file file code =
   let parse_list = parse file in
-  let _ = desc_str := !log_str ^ (get_desc parse_list)^"-----End of description-----\n" in
+  let str_desc = get_desc parse_list in
+  let _ = if str_desc <> "" then
+            desc_str := !log_str ^ (get_desc parse_list)^"-----End of description-----\n"
+  in
   try
    let f_name, out_come1, out_come2 = match_expr parse_list [| |] Empty "" 0
    in  let (stat, s_out) = run (String.sub file 0 (String.length file -5)) (Array.append [|"ucdsl"|] f_name) in
@@ -135,7 +138,7 @@ let rec parse_file file code =
                                      ^"std err is of ucdsl is:-------\n"
                                      ^s_out
                                      ^"\n-------Expected error according to outcome is:-------\n"
-                                     ^out_come2^"______________________________";
+                                     ^out_come2;
                                   code+1))
                   |Success ->  (log_str := !log_str
                                       ^"->Test failed - Exit code *0 expected* but exit code is "
@@ -153,9 +156,9 @@ let log_fun () =
   let _ = 
   if !verbose then
     (write_log "log" (!desc_str
-                      ^ !log_str ^ !sec_str^"\n........................");
+                      ^ !log_str ^ !sec_str^"\n.._______________________________..");
      print_endline (!desc_str
-                      ^ !log_str ^ !sec_str^"\n........................"))
+                      ^ !log_str ^ !sec_str^"\n.._______________________________.."))
   else if !quiet then
     write_log "log" (!log_str ^ !sec_str)
   else
