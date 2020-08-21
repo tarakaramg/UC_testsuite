@@ -56,10 +56,10 @@ let call_dir_test dir_list_local =
    
 let main =
 begin
-let speclist = [("-verbose", Arg.Set verbose, "-verbose dir [Enables verbose mode]");
-("-debug", Arg.Set debug, "-debug file [Prints debug information]");
-("-quiet", Arg.Set quiet, "-quiet dir [Enables quiet mode]");
-("-create", Arg.Set create, "-create dir [Create TEST files mode]");
+let speclist = [("-verbose", Arg.Set verbose, "<dir> [Enables verbose mode]");
+("-debug", Arg.Set debug, "<file> [Prints debug information of a TEST file]");
+("-quiet", Arg.Set quiet, "<dir> [Enables quiet mode]");
+("-create", Arg.Set create, "<dir> [Create TEST files mode]");
                ]
 in
 let usage_msg = "Available options:"  in

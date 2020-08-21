@@ -10,14 +10,14 @@ let print_expr (e:expr) =
   match e with
   |Requires r -> print_endline "Requires"; print_endline r; print_endline "End of Requires"
   |Desc d -> print_endline "Description"; print_endline d; print_endline "End of description"
-  |Args o -> print_endline "ARGS"; List.iter print_endline o ; print_string "\nEnd of ARGS\n"
+  |Args o -> print_endline "ARGS"; List.iter print_endline o ; print_endline "End of ARGS"
   |Outcome (o1,o2) -> let _ = print_endline "OUTCOME" in
-                      let _ = if o1=Success then print_string "Success \n"
-                      else if o1=Failure then print_string "Failure \n"
-                              else print_endline "Unknown\n"
-                      in let _ = print_endline "Outcome description\n" in
+                      let _ = if o1=Success then print_endline "Success"
+                      else if o1=Failure then print_endline "Failure"
+                              else print_endline "Unknown"
+                      in let _ = print_endline "Outcome description" in
                          print_endline o2;
-                         print_endline "End of outcome description\n"
+                         print_endline "____End of outcome description____"
                               
 let get_desc lst =
   let rec desc lst_d str =
@@ -30,7 +30,7 @@ let get_desc lst =
                          
 let print_list lst =
   let rec print_elements er args = function
-    |[] -> print_string "______END______\n"; args
+    |[] -> (*print_string "______END______\n";*) args
     |e::l -> match e with
                 |Args o -> print_expr e; print_elements er (o@args) l
                 |Outcome (o1, o2) ->  if er <> 0 then

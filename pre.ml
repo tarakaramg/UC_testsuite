@@ -112,10 +112,11 @@ let rec parse_file file code =
        |Some 0 -> begin match out_come1 with
                   |Success -> if s_out = "" then
                                 (log_str := !log_str ^ "**Test passed - Outcome is success " 
-                                                       ^"and exit code is 0"; code)
+                                                       ^"and exit code is 0\n"; code)
                               else
                                 (log_str := !log_str ^
-        "->Test failed - *std out expected to be empty*\nOutcome is sucess and exit code is 0"
+                                    "->Test failed - *ucdsl output is expected to be empty*"^
+                                    "\nOutcome is sucess and exit code is 0"
                                 ;create_conflict file "unknown" s_out; code+1)
                   |Failure -> log_str := !log_str ^
                      "->Test failed - *Exit code is 0 but outcome is Failure*"^s_out; code+1
@@ -127,15 +128,16 @@ let rec parse_file file code =
        |Some n -> begin match out_come1 with
                   |Failure -> (if s_out = out_come2 then
                                  (log_str := !log_str ^
-                "**Test passed - Outcome is failure and exit code is "^string_of_int n; code)
+                    "**Test passed - Outcome is failure and exit code is "^string_of_int n^"\n";
+                                  code)
                                else
                                  (log_str := !log_str ^
-                                 "->Test failed - *std err mismatch* with outcome description"
+                           "->Test failed - *ucdsl error is different from* outcome description"
                                      ^"\nOutcome is failure and exit code is "
                                      ^ string_of_int n;
                                   create_conflict file "failure" s_out;
                                   sec_str := "\n"^"-------"
-                                     ^"std err is of ucdsl is:-------\n"
+                                     ^"ucdsl returned error is:-------\n"
                                      ^s_out
                                      ^"\n-------Expected error according to outcome is:-------\n"
                                      ^out_come2;
@@ -143,7 +145,7 @@ let rec parse_file file code =
                   |Success ->  (log_str := !log_str
                                       ^"->Test failed - Exit code *0 expected* but exit code is "
                                       ^string_of_int n;
-                                sec_str := "\nstd err is:\n"^s_out;
+                                sec_str := "\nucdsl returned:\n"^s_out;
                                 create_conflict file "failure" s_out;code+1)
                   |_ -> (log_str := !log_str ^ "->Test failed - *unexpected outcome*;\n" 
                                     ^"exit code is "^string_of_int n;
@@ -156,7 +158,7 @@ let log_fun () =
   let _ = 
   if !verbose then
     (write_log "log" (!desc_str
-                      ^ !log_str ^ !sec_str^"\n.._______________________________..");
+                      ^ !log_str ^ !sec_str^"\n.._______________________________..\n");
      print_endline (!desc_str
                       ^ !log_str ^ !sec_str^"\n.._______________________________.."))
   else if !quiet then
@@ -180,9 +182,9 @@ let pre_verbose dir  =
   in
   let s = List.length file_list in
   let _ = if (s = 0) then
-            (let _ = log_str := "Found 0 files" in log_fun(); exit 0)
+            (let _ = log_str := "\nFound 0 files" in log_fun(); exit 0)
           else
-            let _ = log_str := "Found " ^ (string_of_int s) ^
+            let _ = log_str := "\nFound " ^ (string_of_int s) ^
                          " files \n" in log_fun()
   in
   let rec parse_list fil_list exit_code =
@@ -193,7 +195,7 @@ let pre_verbose dir  =
              log_fun(); exit 0)
            else (
              let _ = log_str := !log_str^ "Total " ^string_of_int exit_code ^
-                          " errors found, see  log\n"^dir^"/log" in
+                          " errors found, see  log file for details" in
              log_fun();
              exit 1)
     |e::l -> let _ = log_str := !log_str^e^"\n" in
