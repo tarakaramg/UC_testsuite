@@ -56,13 +56,15 @@ let call_dir_test dir_list_local =
    
 let main =
 begin
-let speclist = [("-verbose", Arg.Set verbose, "<dir> [Enables verbose mode]");
-("-debug", Arg.Set debug, "<file> [Prints debug information of a TEST file]");
-("-quiet", Arg.Set quiet, "<dir> [Enables quiet mode]");
-("-create", Arg.Set create, "<dir> [Create TEST files mode]");
+let speclist = [("-verbose", Arg.Set verbose, "<dir> Enables verbose mode");
+("-debug", Arg.Set debug, "<file> Prints debug information of a TEST file");
+("-quiet", Arg.Set quiet, "<dir> Enables quiet mode");
+("-create", Arg.Set create, "<dir> Create TEST files mode");
                ]
 in
-let usage_msg = "Available options:"  in
+let usage_msg =
+  "Usage: dsl-test [options] dir\n(dir is mandatory except with -debug option when it's omitted)"
+in
    Arg.parse speclist (fun anon -> check_dirs anon) usage_msg;
    call_dir_test !dirs_list;
 end
