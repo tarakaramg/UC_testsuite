@@ -98,12 +98,12 @@ running above args with ucdsl.
       
   
 let rec parse_file file code =
+try
   let parse_list = parse file in
   let str_desc = get_desc parse_list in
   let _ = if str_desc <> "" then
             desc_str := !log_str ^ (get_desc parse_list)^"-----End of description-----\n"
   in
-  try
    let f_name, out_come1, out_come2 = match_expr parse_list [| |] Empty "" 0
    in  let (stat, s_out) =
          run (String.sub file 0 (String.length file -5)) (Array.append [|"ucdsl"|] f_name) in
