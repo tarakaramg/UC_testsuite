@@ -9,14 +9,14 @@ open Unix
 let print_expr (e:expr) =
   match e with
   |Requires r -> print_endline "Requires"; print_endline r; print_endline "End of Requires"
-  |Desc d -> print_endline "Description"; print_endline d; print_endline "End of description"
+  |Desc d -> print_endline "Description"; print_string d; print_endline "End of description"
   |Args o -> print_endline "ARGS"; List.iter print_endline o ; print_endline "End of ARGS"
   |Outcome (o1,o2) -> let _ = print_endline "OUTCOME" in
                       let _ = if o1=Success then print_endline "Success"
                       else if o1=Failure then print_endline "Failure"
                               else print_endline "Unknown"
                       in let _ = print_endline "Outcome description" in
-                         print_endline o2;
+                         print_string o2;
                          print_endline "____End of outcome description____"
                               
 let get_desc lst =

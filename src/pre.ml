@@ -89,7 +89,7 @@ let create_conflict file outcome1 outcome2 =
   let dir = Filename.dirname file in
   let file_name = dir^"/"^"CONFLICT" in
   let s = read_file file in
-  let s2 = s^"\n(*above lines are copied from existing TEST file blow content is the outcome of 
+  let s2 = s^"\n(*above lines are copied from existing TEST file below content is the outcome of 
 running above args with ucdsl.
               This file needs to be deleted for the ucdsl test suite to run this test*)\noutcome:"
            ^outcome1^"\n"^outcome2^".\n" in
@@ -111,7 +111,7 @@ try
     |Some 0 -> begin match out_come1 with
        |Success -> if s_out = "" then
                      (log_str := !log_str ^ "**Test passed - Outcome is success " 
-                                 ^"and exit code is 0\n"; code)
+                                 ^"and exit code is 0"; code)
                    else
                      (log_str := !log_str ^
                                    "->Test failed - *ucdsl output is expected to be empty*"^
@@ -127,7 +127,7 @@ try
     |Some n -> begin match out_come1 with
        |Failure -> (if s_out = out_come2 then
                       (log_str := !log_str ^
-                                    "**Test passed - Outcome is failure and exit code is "^string_of_int n^"\n";
+                                    "**Test passed - Outcome is failure and exit code is "^string_of_int n;
                        code)
                     else
                       (log_str := !log_str ^
@@ -151,23 +151,20 @@ try
               create_conflict file "unknown" s_out;code+1)
                   end
   with
-  |e -> let log_err = Printexc.to_string e in log_str := !log_str ^log_err^"\n"; (code+1)
+  |e -> let log_err = Printexc.to_string e in log_str := !log_str ^log_err; (code+1)
                                               
   
 let log_fun () =
   let _ = 
   if !verbose then
-    (write_log "log" (!desc_str
-                      ^ !log_str ^ !sec_str^"\n.._______________________________..\n");
+    (write_log "log" !desc_str;
      print_endline (!desc_str
-                      ^ !log_str ^ !sec_str^"\n.._______________________________.."))
-  else if !quiet then
-    write_log "log" (!log_str ^ !sec_str)
-  else
-    (write_log "log" (!log_str ^ !sec_str);
-     print_endline !log_str;)
+                      ^ !log_str ^ !sec_str))
+  else if not !quiet then
+     print_endline (!log_str ^"\n")
     
-     in
+  in
+     write_log "log" (!log_str ^ !sec_str);
      log_str := "";
      sec_str := "";
      desc_str := ""
@@ -182,7 +179,7 @@ let pre_verbose dir  =
   in
   let s = List.length file_list in
   let _ = if (s = 0) then
-            (let _ = log_str := "\nFound 0 files" in log_fun(); exit 0)
+            (let _ = log_str := "\nFound 0 files \n" in log_fun(); exit 0)
           else
             let _ = log_str := "\nFound " ^ (string_of_int s) ^
                          " files \n" in log_fun()
@@ -205,10 +202,13 @@ let pre_verbose dir  =
              let file_name = dir_f^"/"^"CONFLICT" in
              if Sys.file_exists(file_name) then
                (let _ = log_str := !log_str^"Test skipped\nError: "^file_name^" exists" in
+                let _ = sec_str := !sec_str^"\n\n.._______________________________..\n" in
                 let _ = log_fun() in parse_list l (exit_code+1))
              else 
                (let code = parse_file e exit_code in
-               log_fun ();parse_list l code)
+                sec_str := !sec_str^"\n\n.._______________________________..\n";
+                log_fun ();
+                parse_list l code)
   in parse_list file_list 0
        
 
