@@ -11,10 +11,9 @@ let dirs_list = ref []
               
 let check_dirs anon =
 (*  let _ = print_endline anon in *)
-  if (List.length !dirs_list <> 0) then
-    ( print_string ("Too many arguments \"" ^ anon ^ "\" is unexpected \n"); exit 1)
+  if (List.length !dirs_list <> 0) then 1
   else
-     dirs_list := (!dirs_list) @ [anon]
+     (dirs_list := (!dirs_list) @ [anon]; 0)
 
 let verify_dir dir =
   try
@@ -42,34 +41,36 @@ let call_dir_test dir_list_local =
     let b = verify_dir (List.nth dir_list_local 0) in
     let _ = create_log () in
     pre_verbose b
-    (* if (!create ) then
-      pre_create b
-    else if (!quiet && not !debug && not !verbose) || (not !quiet && !debug && not !verbose) ||
-               (not !quiet && not !debug && !verbose)
-    then pre_verbose b
-    else
-      exit 2 *)
-    
-              
-              
-   
+let usage_msg = "Usage: dsl-test [verbosity option] dir\ndsl-test -debug file"
+
 let main =
 begin
-let speclist = [("-verbose", Arg.Rest (fun x -> check_dirs x; verbose := true), "<dir> Enables verbose mode");
+  let rec speclist = [("-verbose", Arg.Rest (fun x -> let r =  check_dirs x in
+                                                 if r = 0 then verbose := true
+                                                 else (print_endline "Only one option is allowed";
+                                                       Arg.usage speclist usage_msg;
+                                                       exit 1)
+                                 ), "Verbosity option: enables verbose mode");
+                ("-quiet", Arg.Rest (fun x -> let r = check_dirs x in
+                                              if r = 0 then quiet := true
+                                              else (print_endline "Only one option is allowed";
+                                                    Arg.usage speclist usage_msg;
+                                                    exit 1)
+                             ), "Verbosity option: enables quiet mode");
                 ("-debug", Arg.Rest
                              (fun x -> let _ = check_dirs x in
                               if Sys.file_exists x then pre_debug x
                               else if (Sys.file_exists ("./"^x)) then pre_debug ("./"^x)
                               else  print_endline (x^" not found"); exit 1)
-                 , "<file> Prints debug information of a TEST file");
-("-quiet", Arg.Rest (fun x -> check_dirs x; quiet := true), "<dir> Enables quiet mode");
-("-create", Arg.Set create, "<dir> Create TEST files mode");
+                 , "Prints debug information of a TEST file");
+("-create", Arg.Set create, "Create TEST files mode");
                ]
 in
-let usage_msg =
-  "Usage: dsl-test [options]"
-in
-   Arg.parse speclist (fun x -> ()) (*fun anon -> check_dirs anon *) usage_msg;
+Arg.parse speclist (fun anon -> let r = check_dirs anon in
+                                if r <> 0 then
+                                  (print_endline "Only one option is allowed";
+                                   Arg.usage speclist usage_msg;
+                                   exit 1)) usage_msg;
    call_dir_test !dirs_list
 end
 
