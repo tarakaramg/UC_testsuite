@@ -127,18 +127,19 @@ try
     |Some n -> begin match out_come1 with
        |Failure -> (if s_out = out_come2 then
                       (log_str := !log_str ^
-                                    "**Test passed - Outcome is failure and exit code is "^string_of_int n;
+                                    "**Test passed - Outcome is failure and exit code is "
+                                    ^string_of_int n;
                        code)
                     else
                       (log_str := !log_str ^
-                                    "->Test failed - *ucdsl error is different from* outcome description"
+                             "->Test failed - *ucdsl message is different from* outcome description"
                                     ^"\nOutcome is failure and exit code is "
                                     ^ string_of_int n;
                        create_conflict file "failure" s_out;
                        sec_str := "\n"^"-------"
-                                  ^"ucdsl returned error is:-------\n"
+                                  ^"ucdsl returned:-------\n"
                                   ^s_out
-                                  ^"\n-------Expected error according to outcome is:-------\n"
+                                  ^"\n-------Outcome message is:-------\n"
                                   ^out_come2;
                        code+1))
        |Success ->  (log_str := !log_str
