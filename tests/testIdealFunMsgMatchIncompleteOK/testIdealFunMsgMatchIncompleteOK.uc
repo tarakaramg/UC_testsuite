@@ -15,10 +15,8 @@ functionality S() implements D I {
   initial state Is 
   {
    match message with
-     D.bla => {fail.}
-   | D.othermsg => {fail.}
-   | I.bla => {fail.}
-   | I.othermsg => {fail.}
+   | D.D.* => {fail.}
+   | I.* => {fail.}
    end
   }
  

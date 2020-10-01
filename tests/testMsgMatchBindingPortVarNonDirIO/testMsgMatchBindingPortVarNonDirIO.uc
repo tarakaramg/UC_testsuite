@@ -12,16 +12,14 @@ out bli()
 
 adversarial A {A:a}
 
-
-
 functionality S() implements D A {
 
- party P serves D,A {
+ party P serves D.D A.A {
   initial state Is 
   {
    match message with
-     p@A.othermsg => {fail.}
-   | othermsg => {fail.}
+     p@A.A.bla => {fail.}
+   | * => {fail.}
    end
   }
  }

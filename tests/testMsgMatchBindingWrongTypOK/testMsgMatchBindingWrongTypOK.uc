@@ -1,7 +1,7 @@
-requires KeysExponentsAndPlainTexts.
+ec_requires KeysExponentsAndPlainTexts.
 
 direct d {
-in x@k(k:key)
+in x@k(k1 : key)
 out bli()@x
 }
 
@@ -18,12 +18,12 @@ adversarial A {A:a}
 
 functionality S() implements D A {
 
- party P serves D,A {
+ party P serves D.D A.A {
   initial state Is 
   {
    match message with
-     D.k(e:key) => {fail.}
-   | othermsg => {fail.}
+     p@D.D.k(e) => {fail.}
+   | *  => {fail.}
    end
   }
  }

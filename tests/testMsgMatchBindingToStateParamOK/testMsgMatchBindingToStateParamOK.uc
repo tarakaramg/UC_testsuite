@@ -16,19 +16,19 @@ adversarial A {A:a}
 
 functionality S() implements D A {
 
- party P serves D,A {
+ party P serves D.D A.A {
   initial state Is 
   {
    match message with
-    othermsg => {fail.}
+    * => {fail.}
    end
   }
 
   state S(p:port)
   {
    match message with
-     D.bla(q) => {fail.}
-   | othermsg => {fail.}
+     p@D.D.bla(q) => {fail.}
+   | *  => {fail.}
    end
   }
 

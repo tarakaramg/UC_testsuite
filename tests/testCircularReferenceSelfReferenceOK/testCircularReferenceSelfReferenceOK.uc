@@ -1,7 +1,8 @@
+adversarial B {
+in bla()
+}
+
 adversarial A{
 A:B
 }
 
-adversarial B {
-in bla()
-}

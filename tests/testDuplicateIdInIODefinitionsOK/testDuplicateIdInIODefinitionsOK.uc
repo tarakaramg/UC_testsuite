@@ -2,4 +2,4 @@ adversarial A {
 in bla()
 }
 
-adversarial B{ in bli()}
+adversarial B { in bli()}

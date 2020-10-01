@@ -1,4 +1,4 @@
-requires KeysExponentsAndPlainTexts.
+ec_requires KeysExponentsAndPlainTexts.
 
 direct a {
 in  x@bla()
@@ -9,12 +9,12 @@ direct A {A:a}
 
 functionality F() implements A {
 
- party P serves A {
+ party P serves A.A {
 
   initial state I {
    var s:univ;
    match message with
-    sender@othermsg => {s<-encode sender; fail.}
+    sender@A.A.bla() => {s<-encode sender; fail.}
    end
   }
  }

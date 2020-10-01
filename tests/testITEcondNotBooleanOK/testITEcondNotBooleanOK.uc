@@ -7,12 +7,12 @@ direct D {D:d}
 
 functionality F(G:D) implements D {
 
- party P serves D {
+ party P serves D.D {
 
   initial state I {
    match message with
-     sender@D.othermsg => {if (sender=sender) {send G.D.bla() and transition I.} else {fail.}}
-   | othermsg => {fail.}
+     sender@D.D.bla() => {if (sender=sender) {send G.D.bla() and transition I.} else {fail.}}
+   | * => {fail.}
    end
   }
  }

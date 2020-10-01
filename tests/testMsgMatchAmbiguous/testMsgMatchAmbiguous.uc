@@ -12,27 +12,25 @@ out bli()
 
 adversarial A {A:a}
 
-functionality F() implements D {
- party P serves D {
+functionality F implements D a{
   initial state Is 
   {
    match message with
-    othermsg => {fail.}
+    * => {fail.}
    end
   }
- }
 }
 
 functionality S(X:D) implements D A {
 
- subfun f=F()
+ subfun f=F
 
- party P serves D,A {
+ party P serves D.D A.A {
   initial state Is 
   {
    match message with
      bla => {fail.}
-   | othermsg => {fail.}
+   | * => {fail.}
    end
   }
  }

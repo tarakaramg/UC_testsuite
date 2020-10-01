@@ -1,4 +1,4 @@
-requires KeysExponentsAndPlainTexts.
+ec_requires KeysExponentsAndPlainTexts.
 
 direct a {
 in  x@bla()
@@ -9,12 +9,12 @@ direct A {A:a}
 
 functionality F() implements A {
 
- party P serves A {
+ party P serves A.A {
 
   initial state I {
    var pp:port*port;
    match message with
-    sender@othermsg => {pp<-sender; fail.}
+    sender@A.A.bla() => {pp<-sender; fail.}
    end
   }
  }

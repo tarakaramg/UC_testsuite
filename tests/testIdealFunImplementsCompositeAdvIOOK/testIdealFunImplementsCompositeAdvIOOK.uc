@@ -20,7 +20,7 @@ functionality S() implements D I {
   initial state Is 
   {
    match message with
-     othermsg => {fail.}
+     * => {fail.}
    end
   }
  

@@ -16,12 +16,12 @@ adversarial A {A:a}
 
 functionality S() implements D A {
 
- party P serves D,A {
+ party P serves D.D A.A {
   initial state Is 
   {
    match message with
-     A.othermsg => {fail.}
-   | othermsg => {fail.}
+     A.A.* => {fail.}
+   | * => {fail.}
    end
   }
  }

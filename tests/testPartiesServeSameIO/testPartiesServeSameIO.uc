@@ -1,28 +1,27 @@
+direct B {
+in x@m()
+}
+
 direct A {
 Bio1:B
 Bio2:B
 }
 
-direct B {
-in x@m()
-}
-
-
 functionality S() implements A {
- party P1 serves Bio1 {
+ party P1 serves A.Bio1 {
   initial state Is 
   {
    match message with
-    othermsg => {fail.}
+    * => {fail.}
    end
   }
  }
 
- party P2 serves Bio1 {
+ party P2 serves A.Bio1 {
   initial state Is 
   {
    match message with
-    othermsg => {fail.}
+    *  => {fail.}
    end
   }
  }

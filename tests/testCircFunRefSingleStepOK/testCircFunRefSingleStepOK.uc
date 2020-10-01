@@ -6,11 +6,11 @@ direct A {a:a}
 
 functionality F() implements A {
 
- party P serves a {
+ party P serves A.a {
   initial state Isus 
   {
    match message with
-    othermsg => {fail.}
+    |*  => {fail.}
    end
   }
  }
@@ -18,13 +18,13 @@ functionality F() implements A {
 
 functionality R() implements A {
 
-subfun SF=F()
+subfun SF=F
 
- party P serves a {
+ party P serves A.a {
   initial state Isus 
   {
    match message with
-    othermsg => {fail.}
+    |*  => {fail.}
    end
   }
  }

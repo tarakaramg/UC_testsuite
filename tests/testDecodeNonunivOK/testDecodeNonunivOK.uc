@@ -1,24 +1,23 @@
-requires KeysExponentsAndPlainTexts.
+ec_requires KeysExponentsAndPlainTexts.
 
 direct a {
-in  x@bla(u:univ)
-out bli()@x
+in  pt@bla(u:univ)
+out bli()@pt
 }
 
-direct A {A:a}
+direct A {a:a}
 
 functionality F() implements A {
 
- party P serves A {
+ party P serves A.a {
 
   initial state I {
    match message with
-    bla(k) => {	decode k as key with
-		  ok x =>{fail.}
-		| error=>{fail.}
-		end
-	      }
-   |othermsg => {fail.}
+    pt@A.a.bla(k) => { decode k as key with
+                 ok x =>{fail.}
+                 |error  =>{fail.}
+                 end
+              }
    end
   }
  }

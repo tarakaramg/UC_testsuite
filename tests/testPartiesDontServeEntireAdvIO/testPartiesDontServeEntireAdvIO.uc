@@ -1,10 +1,10 @@
+adversarial B {
+in m()
+}
+
 adversarial A {
 Bio1:B
 Bio2:B
-}
-
-adversarial B {
-in m()
 }
 
 direct C {in x@m()}
@@ -15,20 +15,20 @@ C2:C
 }
 
 functionality S() implements D A {
- party P1 serves C1,Bio1 {
+ party P1 serves D.C1 A.Bio1 {
   initial state Is 
   {
    match message with
-    othermsg => {fail.}
+    * => {fail.}
    end
   }
  }
 
- party P2 serves C2 {
+ party P2 serves D.C2 {
   initial state Is 
   {
    match message with
-    othermsg => {fail.}
+    *  => {fail.}
    end
   }
  }

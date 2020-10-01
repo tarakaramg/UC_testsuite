@@ -1,4 +1,4 @@
-requires KeysExponentsAndPlainTexts.
+ec_requires KeysExponentsAndPlainTexts.
 
 direct d {
 in  x@bla(k:key)
@@ -9,13 +9,13 @@ direct D {D:d}
 
 functionality F(G:D) implements D {
 
- party P serves D {
+ party P serves D.D {
 
   initial state I {
    var k:key;
    match message with
-     sender@D.othermsg => {k<-g; fail.}
-   | othermsg => {fail.}
+     D.D.* => {k<-g; fail.}
+   | * => {fail.}
    end
   }
  }
